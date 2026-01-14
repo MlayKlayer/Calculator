@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minimal Calculator + Tip Split</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="calculator" aria-label="Calculator">
+        <div class="display" aria-live="polite" aria-atomic="true">
+          <div id="calc-display" class="display-value">0</div>
+        </div>
+        <div class="button-grid" role="group" aria-label="Calculator buttons">
+          <button class="btn btn-utility" data-action="ac" aria-label="All clear">AC</button>
+          <button class="btn btn-utility" data-action="clear" aria-label="Clear entry">C</button>
+          <button class="btn btn-utility" data-action="backspace" aria-label="Backspace">⌫</button>
+          <button class="btn btn-operator" data-operator="/" aria-label="Divide">÷</button>
+
+          <button class="btn" data-number="7">7</button>
+          <button class="btn" data-number="8">8</button>
+          <button class="btn" data-number="9">9</button>
+          <button class="btn btn-operator" data-operator="*" aria-label="Multiply">×</button>
+
+          <button class="btn" data-number="4">4</button>
+          <button class="btn" data-number="5">5</button>
+          <button class="btn" data-number="6">6</button>
+          <button class="btn btn-operator" data-operator="-" aria-label="Subtract">−</button>
+
+          <button class="btn" data-number="1">1</button>
+          <button class="btn" data-number="2">2</button>
+          <button class="btn" data-number="3">3</button>
+          <button class="btn btn-operator" data-operator="+" aria-label="Add">+</button>
+
+          <button class="btn btn-tip" data-action="tip" aria-label="Open tip calculator">Tip</button>
+          <button class="btn" data-number="0">0</button>
+          <button class="btn" data-number=".">.</button>
+          <button class="btn btn-equals" data-action="equals" aria-label="Equals">=</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal-overlay" id="tip-overlay" aria-hidden="true">
+      <div
+        class="tip-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tip-title"
+      >
+        <header class="tip-header">
+          <h2 id="tip-title">Tip & Split</h2>
+          <button class="icon-button" id="tip-close" aria-label="Close tip calculator">×</button>
+        </header>
+
+        <div class="tip-body">
+          <label class="input-group">
+            <span class="label">Base amount</span>
+            <div class="input-row">
+              <span class="prefix">$</span>
+              <input
+                id="base-amount"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                aria-label="Base amount"
+              />
+            </div>
+          </label>
+
+          <div class="split-group" aria-label="Split between people">
+            <span class="label">People</span>
+            <div class="stepper" role="group" aria-label="Number of people">
+              <button class="stepper-btn" data-step="-1" aria-label="Decrease people">
+                −
+              </button>
+              <div id="people-count" class="stepper-value" aria-live="polite">1</div>
+              <button class="stepper-btn" data-step="1" aria-label="Increase people">
+                +
+              </button>
+            </div>
+          </div>
+
+          <div class="tip-section">
+            <span class="label">Tip %</span>
+            <div class="tip-presets" role="group" aria-label="Tip presets">
+              <button class="chip" data-tip="5">5%</button>
+              <button class="chip" data-tip="10">10%</button>
+              <button class="chip" data-tip="15">15%</button>
+              <button class="chip" data-tip="20">20%</button>
+              <div class="custom-tip">
+                <input
+                  id="custom-tip"
+                  type="number"
+                  min="0"
+                  max="50"
+                  step="1"
+                  inputmode="numeric"
+                  aria-label="Custom tip percentage"
+                  placeholder="Custom"
+                />
+                <span class="suffix">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="results">
+            <div class="result-main">
+              <span class="result-label">Per person</span>
+              <span id="per-person" class="result-value">$0.00</span>
+            </div>
+            <div class="result-row">
+              <span>Tip total</span>
+              <span id="tip-total">$0.00</span>
+            </div>
+            <div class="result-row">
+              <span>Total amount</span>
+              <span id="total-amount">$0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
