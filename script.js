@@ -193,6 +193,8 @@ const updateTipOutputs = () => {
   perPersonOutput.textContent = `$${perPerson.toFixed(2)}`;
   tipTotalOutput.textContent = `$${tipAmount.toFixed(2)}`;
   totalAmountOutput.textContent = `$${total.toFixed(2)}`;
+  setValueNeutral(perPersonOutput, perPerson === 0);
+  animateValue(perPersonOutput);
 };
 
 const setPeople = (value) => {

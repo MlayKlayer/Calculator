@@ -84,6 +84,14 @@ body {
   text-overflow: ellipsis;
 }
 
+.value-change {
+  animation: valueChange 150ms ease-out;
+}
+
+.value-neutral {
+  color: var(--text-secondary);
+}
+
 .button-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -345,7 +353,7 @@ body {
   justify-content: space-between;
   align-items: center;
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .result-value {
@@ -520,6 +528,18 @@ body {
   justify-content: space-between;
   color: var(--text-secondary);
   font-size: 0.95rem;
+  opacity: 0.78;
+}
+
+@keyframes valueChange {
+  0% {
+    opacity: 0.6;
+    transform: translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 700px) {
