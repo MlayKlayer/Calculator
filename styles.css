@@ -9,7 +9,7 @@
   --accent-blue: #4f8cff;
   --accent-blue-strong: #3b76f0;
   --accent-gray: #2c3442;
-  --focus-ring: rgba(79, 140, 255, 0.32);
+  --focus-ring: rgba(79, 140, 255, 0.45);
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-sm: 12px;
@@ -366,7 +366,6 @@ body {
   justify-content: space-between;
   color: var(--text-secondary);
   font-size: 0.95rem;
-  opacity: 0.78;
 }
 
 .change-panel {
@@ -493,7 +492,7 @@ body {
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-height 0.2s ease-out, opacity 0.2s ease-out;
+  transition: max-height 0.25s ease, opacity 0.25s ease;
 }
 
 .split-fields.is-open {
@@ -522,7 +521,6 @@ body {
 .change-value {
   font-size: 1.8rem;
   color: var(--accent-blue);
-  font-weight: 650;
 }
 
 .change-breakdown {

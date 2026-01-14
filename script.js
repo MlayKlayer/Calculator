@@ -63,8 +63,6 @@ function getCalcValue() {
 const updateDisplay = () => {
   display.textContent = formatNumber(displayValue);
   tipButton.disabled = hasError;
-  setValueNeutral(display, !hasError && getCalcValue() === 0);
-  animateValue(display);
   syncPaidFromCalc();
 };
 
@@ -220,16 +218,6 @@ const parseMoneyInput = (input) => {
   return value;
 };
 
-const animateValue = (element) => {
-  element.classList.remove("value-change");
-  void element.offsetWidth;
-  element.classList.add("value-change");
-};
-
-const setValueNeutral = (element, isNeutral) => {
-  element.classList.toggle("value-neutral", isNeutral);
-};
-
 const toBaseCurrency = (amount, currency) =>
   currency === "BGN" ? amount : amount * FX_RATE;
 
@@ -300,8 +288,6 @@ const updateChangeOutputs = () => {
   changeValue.textContent = formatMoney(displayAmountConverted);
   paidTotalOutput.textContent = formatMoney(paidConverted);
   priceTotalOutput.textContent = formatMoney(priceConverted);
-  setValueNeutral(changeValue, displayAmountConverted === 0);
-  animateValue(changeValue);
 };
 
 const openTipModal = () => {
@@ -370,7 +356,6 @@ paidSecondaryInput.addEventListener("input", () => {
 useCalcButton.addEventListener("click", () => {
   changeState.paidManual = false;
   syncPaidFromCalc();
-  paidInput.focus();
 });
 
 document.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
