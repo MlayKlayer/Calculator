@@ -188,6 +188,16 @@ const parseBaseAmount = () => {
   return value;
 };
 
+const setValueNeutral = (element, isNeutral) => {
+  element.classList.toggle("value-neutral", isNeutral);
+};
+
+const animateValue = (element) => {
+  element.classList.remove("value-change");
+  void element.offsetWidth;
+  element.classList.add("value-change");
+};
+
 const updateTipOutputs = () => {
   const base = parseBaseAmount();
   const tipAmount = base * (tipPercent / 100);
