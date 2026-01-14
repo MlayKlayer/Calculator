@@ -140,6 +140,9 @@
                 <span id="change-label" class="result-label">Change</span>
                 <span id="change-value" class="change-value">0.00</span>
               </div>
+              <div id="change-hint" class="change-hint">
+                Add more payment to reach total
+              </div>
               <div class="change-breakdown">
                 <span>Paid</span>
                 <span id="paid-total">0.00</span>
@@ -198,7 +201,6 @@
           <div class="tip-section">
             <span class="label">Tip %</span>
             <div class="tip-presets" role="group" aria-label="Tip presets">
-              <button class="chip" data-tip="5">5%</button>
               <button class="chip" data-tip="10">10%</button>
               <button class="chip" data-tip="15">15%</button>
               <button class="chip" data-tip="20">20%</button>
@@ -216,6 +218,15 @@
                 <span class="suffix">%</span>
               </div>
             </div>
+          </div>
+
+          <div class="tip-options">
+            <label class="round-toggle">
+              <input id="round-per-person" type="checkbox" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span class="toggle-label">Round per person</span>
+            </label>
+            <span id="rounding-note" class="rounding-note">Totals may vary due to rounding.</span>
           </div>
 
           <div class="results">

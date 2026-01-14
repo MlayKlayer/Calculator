@@ -9,6 +9,8 @@ const peopleCount = document.getElementById("people-count");
 const stepperButtons = document.querySelectorAll(".stepper-btn");
 const tipChips = document.querySelectorAll(".chip");
 const customTipInput = document.getElementById("custom-tip");
+const roundToggle = document.getElementById("round-per-person");
+const roundingNote = document.getElementById("rounding-note");
 
 const perPersonOutput = document.getElementById("per-person");
 const tipTotalOutput = document.getElementById("tip-total");
@@ -23,6 +25,8 @@ const changeLabel = document.getElementById("change-label");
 const changeValue = document.getElementById("change-value");
 const paidTotalOutput = document.getElementById("paid-total");
 const priceTotalOutput = document.getElementById("price-total");
+const changeHint = document.getElementById("change-hint");
+const paidInputRow = paidInput.closest(".input-row");
 
 let displayValue = "0";
 let storedValue = null;
@@ -32,6 +36,7 @@ let hasError = false;
 
 let people = 1;
 let tipPercent = 10;
+let roundPerPerson = false;
 const FX_RATE = 1.95583;
 const changeState = {
   priceCurrency: "EUR",
@@ -63,7 +68,6 @@ function getCalcValue() {
 const updateDisplay = () => {
   display.textContent = formatNumber(displayValue);
   tipButton.disabled = hasError;
-  syncPaidFromCalc();
 };
 
 const clearAll = () => {
@@ -203,11 +207,16 @@ const updateTipOutputs = () => {
   const tipAmount = base * (tipPercent / 100);
   const total = base + tipAmount;
   const perPerson = total / people;
+  const roundedPerPerson = roundPerPerson
+    ? Math.round(perPerson * 2) / 2
+    : perPerson;
+  const displayTotal = roundPerPerson ? roundedPerPerson * people : total;
+  const displayTip = roundPerPerson ? displayTotal - base : tipAmount;
 
-  perPersonOutput.textContent = `$${perPerson.toFixed(2)}`;
-  tipTotalOutput.textContent = `$${tipAmount.toFixed(2)}`;
-  totalAmountOutput.textContent = `$${total.toFixed(2)}`;
-  setValueNeutral(perPersonOutput, perPerson === 0);
+  perPersonOutput.textContent = `$${roundedPerPerson.toFixed(2)}`;
+  tipTotalOutput.textContent = `$${displayTip.toFixed(2)}`;
+  totalAmountOutput.textContent = `$${displayTotal.toFixed(2)}`;
+  setValueNeutral(perPersonOutput, roundedPerPerson === 0);
   animateValue(perPersonOutput);
 };
 
@@ -266,6 +275,13 @@ function syncPaidFromCalc() {
   updateChangeOutputs();
 }
 
+const flashPaidInput = () => {
+  if (!paidInputRow) return;
+  paidInputRow.classList.remove("flash");
+  void paidInputRow.offsetWidth;
+  paidInputRow.classList.add("flash");
+};
+
 const updateChangeOutputs = () => {
   const price = parseMoneyInput(priceInput);
   const paidPrimary = parseMoneyInput(paidInput);
@@ -302,6 +318,7 @@ const updateChangeOutputs = () => {
   changeValue.textContent = formatMoney(displayAmountConverted);
   paidTotalOutput.textContent = formatMoney(paidConverted);
   priceTotalOutput.textContent = formatMoney(priceConverted);
+  changeHint.classList.toggle("is-visible", !isChange);
 };
 
 const openTipModal = () => {
@@ -345,6 +362,12 @@ customTipInput.addEventListener("input", () => {
   updateTipOutputs();
 });
 
+roundToggle.addEventListener("change", () => {
+  roundPerPerson = roundToggle.checked;
+  roundingNote.classList.toggle("is-visible", roundPerPerson);
+  updateTipOutputs();
+});
+
 tipOverlay.addEventListener("click", (event) => {
   if (event.target === tipOverlay) closeTipModal();
 });
@@ -370,6 +393,8 @@ paidSecondaryInput.addEventListener("input", () => {
 useCalcButton.addEventListener("click", () => {
   changeState.paidManual = false;
   syncPaidFromCalc();
+  changeState.paidManual = true;
+  flashPaidInput();
 });
 
 document.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
@@ -419,6 +444,8 @@ window.addEventListener("keydown", (event) => {
 });
 
 updateDisplay();
+roundToggle.checked = roundPerPerson;
+roundingNote.classList.toggle("is-visible", roundPerPerson);
 setTipPercent(tipPercent);
 updateTipOutputs();
 updateSecondaryCurrency();
