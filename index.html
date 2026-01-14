@@ -8,37 +8,150 @@
   </head>
   <body>
     <main class="app">
-      <section class="calculator" aria-label="Calculator">
-        <div class="display" aria-live="polite" aria-atomic="true">
-          <div id="calc-display" class="display-value">0</div>
-        </div>
-        <div class="button-grid" role="group" aria-label="Calculator buttons">
-          <button class="btn btn-utility" data-action="ac" aria-label="All clear">AC</button>
-          <button class="btn btn-utility" data-action="clear" aria-label="Clear entry">C</button>
-          <button class="btn btn-utility" data-action="backspace" aria-label="Backspace">⌫</button>
-          <button class="btn btn-operator" data-operator="/" aria-label="Divide">÷</button>
+      <div class="layout">
+        <section class="calculator" aria-label="Calculator">
+          <div class="display" aria-live="polite" aria-atomic="true">
+            <div id="calc-display" class="display-value">0</div>
+          </div>
+          <div class="button-grid" role="group" aria-label="Calculator buttons">
+            <button class="btn btn-utility" data-action="ac" aria-label="All clear">AC</button>
+            <button class="btn btn-utility" data-action="clear" aria-label="Clear entry">C</button>
+            <button class="btn btn-utility" data-action="backspace" aria-label="Backspace">⌫</button>
+            <button class="btn btn-operator" data-operator="/" aria-label="Divide">÷</button>
 
-          <button class="btn" data-number="7">7</button>
-          <button class="btn" data-number="8">8</button>
-          <button class="btn" data-number="9">9</button>
-          <button class="btn btn-operator" data-operator="*" aria-label="Multiply">×</button>
+            <button class="btn" data-number="7">7</button>
+            <button class="btn" data-number="8">8</button>
+            <button class="btn" data-number="9">9</button>
+            <button class="btn btn-operator" data-operator="*" aria-label="Multiply">×</button>
 
-          <button class="btn" data-number="4">4</button>
-          <button class="btn" data-number="5">5</button>
-          <button class="btn" data-number="6">6</button>
-          <button class="btn btn-operator" data-operator="-" aria-label="Subtract">−</button>
+            <button class="btn" data-number="4">4</button>
+            <button class="btn" data-number="5">5</button>
+            <button class="btn" data-number="6">6</button>
+            <button class="btn btn-operator" data-operator="-" aria-label="Subtract">−</button>
 
-          <button class="btn" data-number="1">1</button>
-          <button class="btn" data-number="2">2</button>
-          <button class="btn" data-number="3">3</button>
-          <button class="btn btn-operator" data-operator="+" aria-label="Add">+</button>
+            <button class="btn" data-number="1">1</button>
+            <button class="btn" data-number="2">2</button>
+            <button class="btn" data-number="3">3</button>
+            <button class="btn btn-operator" data-operator="+" aria-label="Add">+</button>
 
-          <button class="btn btn-tip" data-action="tip" aria-label="Open tip calculator">Tip</button>
-          <button class="btn" data-number="0">0</button>
-          <button class="btn" data-number=".">.</button>
-          <button class="btn btn-equals" data-action="equals" aria-label="Equals">=</button>
-        </div>
-      </section>
+            <button class="btn btn-tip" data-action="tip" aria-label="Open tip calculator">Tip</button>
+            <button class="btn" data-number="0">0</button>
+            <button class="btn" data-number=".">.</button>
+            <button class="btn btn-equals" data-action="equals" aria-label="Equals">=</button>
+          </div>
+        </section>
+
+        <section class="change-panel" aria-label="Change calculator">
+          <header class="panel-header">
+            <div>
+              <h2>Change Calculator</h2>
+              <p class="panel-subtitle">Ресто</p>
+            </div>
+            <div class="currency-toggle" role="group" aria-label="Output currency">
+              <button class="toggle-chip active" type="button" data-role="output-currency" data-currency="EUR" aria-pressed="true">
+                EUR
+              </button>
+              <button class="toggle-chip" type="button" data-role="output-currency" data-currency="BGN" aria-pressed="false">
+                BGN
+              </button>
+            </div>
+          </header>
+
+          <div class="panel-body">
+            <label class="input-group">
+              <span class="label">Product price</span>
+              <div class="input-row">
+                <input
+                  id="product-price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                  aria-label="Product price"
+                />
+                <div class="currency-toggle" role="group" aria-label="Product price currency">
+                  <button class="toggle-chip active" type="button" data-role="price-currency" data-currency="EUR" aria-pressed="true">
+                    EUR
+                  </button>
+                  <button class="toggle-chip" type="button" data-role="price-currency" data-currency="BGN" aria-pressed="false">
+                    BGN
+                  </button>
+                </div>
+              </div>
+            </label>
+
+            <label class="input-group">
+              <div class="label-row">
+                <span class="label">Paid amount</span>
+                <button class="ghost-action" id="use-calc" type="button" aria-label="Use calculator value">
+                  Use calc
+                </button>
+              </div>
+              <div class="input-row">
+                <input
+                  id="paid-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                  aria-label="Paid amount"
+                />
+                <div class="currency-toggle" role="group" aria-label="Paid amount currency">
+                  <button class="toggle-chip active" type="button" data-role="paid-currency" data-currency="EUR" aria-pressed="true">
+                    EUR
+                  </button>
+                  <button class="toggle-chip" type="button" data-role="paid-currency" data-currency="BGN" aria-pressed="false">
+                    BGN
+                  </button>
+                </div>
+              </div>
+            </label>
+
+            <div class="split-toggle">
+              <button class="toggle-btn" id="split-toggle" type="button" aria-pressed="false">
+                Split payment
+              </button>
+              <span class="helper-text">Add a second currency payment</span>
+            </div>
+
+            <div class="split-fields" id="split-fields">
+              <label class="input-group">
+                <span class="label">Paid amount (second)</span>
+                <div class="input-row">
+                  <input
+                    id="paid-amount-secondary"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputmode="decimal"
+                    aria-label="Second paid amount"
+                  />
+                  <div class="currency-toggle" role="group" aria-label="Second paid amount currency">
+                    <button class="toggle-chip active" type="button" data-role="paid-secondary-currency" data-currency="BGN" aria-pressed="true">
+                      BGN
+                    </button>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <div class="change-output" aria-live="polite">
+              <div class="change-main">
+                <span id="change-label" class="result-label">Change</span>
+                <span id="change-value" class="change-value">0.00</span>
+              </div>
+              <div class="change-breakdown">
+                <span>Paid</span>
+                <span id="paid-total">0.00</span>
+              </div>
+              <div class="change-breakdown">
+                <span>Price</span>
+                <span id="price-total">0.00</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
 
     <div class="modal-overlay" id="tip-overlay" aria-hidden="true">
