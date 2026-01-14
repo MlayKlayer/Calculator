@@ -178,6 +178,10 @@ buttons.forEach((button) => {
   });
 });
 
+tipButton.addEventListener("click", () => {
+  if (!hasError) openTipModal();
+});
+
 const parseBaseAmount = () => {
   const value = parseFloat(baseAmountInput.value);
   if (Number.isNaN(value) || value < 0) return 0;
