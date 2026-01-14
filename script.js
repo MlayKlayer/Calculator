@@ -14,19 +14,6 @@ const perPersonOutput = document.getElementById("per-person");
 const tipTotalOutput = document.getElementById("tip-total");
 const totalAmountOutput = document.getElementById("total-amount");
 
-const priceAmountInput = document.getElementById("price-amount");
-const paidAmountInput = document.getElementById("paid-amount");
-const paidAmountSecondaryInput = document.getElementById("paid-amount-secondary");
-const splitToggle = document.getElementById("split-toggle");
-const splitPanel = document.getElementById("split-panel");
-const syncPaidButton = document.getElementById("sync-paid");
-const changeLabel = document.getElementById("change-label");
-const changeValue = document.getElementById("change-value");
-const priceDisplay = document.getElementById("price-display");
-const paidDisplay = document.getElementById("paid-display");
-
-const FX_RATE = 1.95583;
-
 let displayValue = "0";
 let storedValue = null;
 let pendingOperator = null;
@@ -35,15 +22,6 @@ let hasError = false;
 
 let people = 1;
 let tipPercent = 10;
-
-const changeState = {
-  priceCurrency: "EUR",
-  paidCurrency: "EUR",
-  paidSecondaryCurrency: "BGN",
-  outputCurrency: "EUR",
-  splitEnabled: false,
-  paidLocked: false,
-};
 
 const operators = {
   "+": (a, b) => a + b,
@@ -61,7 +39,6 @@ const formatNumber = (value) => {
 const updateDisplay = () => {
   display.textContent = formatNumber(displayValue);
   tipButton.disabled = hasError;
-  syncPaidFromCalc();
 };
 
 const clearAll = () => {
@@ -255,111 +232,6 @@ tipOverlay.addEventListener("click", (event) => {
 
 tipClose.addEventListener("click", closeTipModal);
 
-const parseMoney = (value) => {
-  const parsed = parseFloat(value);
-  if (Number.isNaN(parsed) || parsed < 0) return 0;
-  return parsed;
-};
-
-const toBGN = (value, currency) =>
-  currency === "EUR" ? value * FX_RATE : value;
-
-const fromBGN = (value, currency) =>
-  currency === "EUR" ? value / FX_RATE : value;
-
-const formatCurrency = (value, currency) => {
-  const symbol = currency === "EUR" ? "€" : "лв";
-  return `${symbol}${value.toFixed(2)}`;
-};
-
-const updateChangeOutputs = () => {
-  const price = parseMoney(priceAmountInput.value);
-  const paid = parseMoney(paidAmountInput.value);
-  const paidSecondary = parseMoney(paidAmountSecondaryInput.value);
-
-  const priceBGN = toBGN(price, changeState.priceCurrency);
-  const paidBGN = toBGN(paid, changeState.paidCurrency);
-  const secondaryBGN = changeState.splitEnabled
-    ? toBGN(paidSecondary, changeState.paidSecondaryCurrency)
-    : 0;
-
-  const paidTotalBGN = paidBGN + secondaryBGN;
-  const outputPrice = fromBGN(priceBGN, changeState.outputCurrency);
-  const outputPaid = fromBGN(paidTotalBGN, changeState.outputCurrency);
-  const diff = outputPaid - outputPrice;
-
-  if (diff >= 0) {
-    changeLabel.textContent = "Change";
-    changeValue.textContent = formatCurrency(diff, changeState.outputCurrency);
-  } else {
-    changeLabel.textContent = "Remaining";
-    changeValue.textContent = formatCurrency(Math.abs(diff), changeState.outputCurrency);
-  }
-
-  priceDisplay.textContent = formatCurrency(outputPrice, changeState.outputCurrency);
-  paidDisplay.textContent = formatCurrency(outputPaid, changeState.outputCurrency);
-};
-
-const setToggleState = (target, currency) => {
-  document.querySelectorAll(`.toggle-btn[data-target="${target}"]`).forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.currency === currency);
-  });
-};
-
-const syncPaidFromCalc = () => {
-  if (changeState.paidLocked || document.activeElement === paidAmountInput) return;
-  if (hasError) return;
-  const currentValue = parseFloat(displayValue);
-  const safeValue = Number.isNaN(currentValue) ? 0 : currentValue;
-  paidAmountInput.value = safeValue.toFixed(2);
-  updateChangeOutputs();
-};
-
-const handlePaidManualEdit = () => {
-  changeState.paidLocked = true;
-  updateChangeOutputs();
-};
-
-priceAmountInput.addEventListener("input", updateChangeOutputs);
-paidAmountInput.addEventListener("input", handlePaidManualEdit);
-paidAmountSecondaryInput.addEventListener("input", updateChangeOutputs);
-
-paidAmountInput.addEventListener("focus", () => {
-  changeState.paidLocked = true;
-});
-
-syncPaidButton.addEventListener("click", () => {
-  changeState.paidLocked = false;
-  syncPaidFromCalc();
-});
-
-splitToggle.addEventListener("click", () => {
-  changeState.splitEnabled = !changeState.splitEnabled;
-  splitToggle.classList.toggle("active", changeState.splitEnabled);
-  splitToggle.setAttribute("aria-pressed", String(changeState.splitEnabled));
-  splitPanel.classList.toggle("open", changeState.splitEnabled);
-  splitPanel.setAttribute("aria-hidden", String(!changeState.splitEnabled));
-  updateChangeOutputs();
-});
-
-const toggleButtons = document.querySelectorAll(".toggle-btn");
-
-toggleButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const { target, currency } = button.dataset;
-    if (target === "price") changeState.priceCurrency = currency;
-    if (target === "paid") {
-      changeState.paidCurrency = currency;
-      changeState.paidSecondaryCurrency = currency === "EUR" ? "BGN" : "EUR";
-      setToggleState("paid-secondary", changeState.paidSecondaryCurrency);
-    }
-    if (target === "paid-secondary") changeState.paidSecondaryCurrency = currency;
-    if (target === "output") changeState.outputCurrency = currency;
-    setToggleState(target, currency);
-    updateChangeOutputs();
-  });
-});
-
 window.addEventListener("keydown", (event) => {
   if (tipOverlay.classList.contains("open")) {
     if (event.key === "Escape") closeTipModal();
@@ -377,4 +249,3 @@ window.addEventListener("keydown", (event) => {
 updateDisplay();
 setTipPercent(tipPercent);
 updateTipOutputs();
-updateChangeOutputs();
