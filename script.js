@@ -13,6 +13,16 @@ const customTipInput = document.getElementById("custom-tip");
 const perPersonOutput = document.getElementById("per-person");
 const tipTotalOutput = document.getElementById("tip-total");
 const totalAmountOutput = document.getElementById("total-amount");
+const priceInput = document.getElementById("product-price");
+const paidInput = document.getElementById("paid-amount");
+const paidSecondaryInput = document.getElementById("paid-amount-secondary");
+const useCalcButton = document.getElementById("use-calc");
+const splitToggle = document.getElementById("split-toggle");
+const splitFields = document.getElementById("split-fields");
+const changeLabel = document.getElementById("change-label");
+const changeValue = document.getElementById("change-value");
+const paidTotalOutput = document.getElementById("paid-total");
+const priceTotalOutput = document.getElementById("price-total");
 
 let displayValue = "0";
 let storedValue = null;
@@ -22,6 +32,14 @@ let hasError = false;
 
 let people = 1;
 let tipPercent = 10;
+const FX_RATE = 1.95583;
+const changeState = {
+  priceCurrency: "EUR",
+  paidCurrency: "EUR",
+  outputCurrency: "EUR",
+  splitEnabled: false,
+  paidManual: false,
+};
 
 const operators = {
   "+": (a, b) => a + b,
@@ -36,9 +54,18 @@ const formatNumber = (value) => {
   return value;
 };
 
+function getCalcValue() {
+  if (hasError) return 0;
+  const value = parseFloat(displayValue);
+  return Number.isNaN(value) ? 0 : value;
+}
+
 const updateDisplay = () => {
   display.textContent = formatNumber(displayValue);
   tipButton.disabled = hasError;
+  setValueNeutral(display, !hasError && getCalcValue() === 0);
+  animateValue(display);
+  syncPaidFromCalc();
 };
 
 const clearAll = () => {
@@ -153,6 +180,10 @@ buttons.forEach((button) => {
   });
 });
 
+tipButton.addEventListener("click", () => {
+  if (!hasError) openTipModal();
+});
+
 const parseBaseAmount = () => {
   const value = parseFloat(baseAmountInput.value);
   if (Number.isNaN(value) || value < 0) return 0;
@@ -168,6 +199,8 @@ const updateTipOutputs = () => {
   perPersonOutput.textContent = `$${perPerson.toFixed(2)}`;
   tipTotalOutput.textContent = `$${tipAmount.toFixed(2)}`;
   totalAmountOutput.textContent = `$${total.toFixed(2)}`;
+  setValueNeutral(perPersonOutput, perPerson === 0);
+  animateValue(perPersonOutput);
 };
 
 const setPeople = (value) => {
@@ -183,6 +216,96 @@ const setTipPercent = (value) => {
     chip.classList.toggle("active", Number(chip.dataset.tip) === tipPercent);
   });
   updateTipOutputs();
+};
+
+const parseMoneyInput = (input) => {
+  const value = parseFloat(input.value);
+  if (Number.isNaN(value) || value < 0) return 0;
+  return value;
+};
+
+const animateValue = (element) => {
+  element.classList.remove("value-change");
+  void element.offsetWidth;
+  element.classList.add("value-change");
+};
+
+function setValueNeutral(element, isNeutral) {
+  element.classList.toggle("value-neutral", isNeutral);
+}
+
+const toBaseCurrency = (amount, currency) =>
+  currency === "BGN" ? amount : amount * FX_RATE;
+
+const fromBaseCurrency = (amount, currency) =>
+  currency === "BGN" ? amount : amount / FX_RATE;
+
+const formatMoney = (value) => value.toFixed(2);
+
+const setToggleGroup = (role, currency) => {
+  const buttons = document.querySelectorAll(`[data-role="${role}"]`);
+  buttons.forEach((button) => {
+    const isActive = button.dataset.currency === currency;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+};
+
+const updateSecondaryCurrency = () => {
+  const secondaryCurrency = changeState.paidCurrency === "EUR" ? "BGN" : "EUR";
+  const secondaryButton = document.querySelector(
+    '[data-role="paid-secondary-currency"]'
+  );
+  secondaryButton.dataset.currency = secondaryCurrency;
+  secondaryButton.textContent = secondaryCurrency;
+  secondaryButton.setAttribute("aria-pressed", "true");
+};
+
+function syncPaidFromCalc() {
+  if (changeState.paidManual) return;
+  const calcValue = getCalcValue();
+  paidInput.value = formatMoney(calcValue);
+  updateChangeOutputs();
+}
+
+const updateChangeOutputs = () => {
+  const price = parseMoneyInput(priceInput);
+  const paidPrimary = parseMoneyInput(paidInput);
+  const paidSecondary = parseMoneyInput(paidSecondaryInput);
+
+  const priceBase = toBaseCurrency(price, changeState.priceCurrency);
+  const paidPrimaryBase = toBaseCurrency(paidPrimary, changeState.paidCurrency);
+  const paidSecondaryBase = changeState.splitEnabled
+    ? toBaseCurrency(
+        paidSecondary,
+        changeState.paidCurrency === "EUR" ? "BGN" : "EUR"
+      )
+    : 0;
+
+  const paidBaseTotal = paidPrimaryBase + paidSecondaryBase;
+  const deltaBase = paidBaseTotal - priceBase;
+  const isChange = deltaBase >= 0;
+  const displayAmount = Math.abs(deltaBase);
+
+  const displayAmountConverted = fromBaseCurrency(
+    displayAmount,
+    changeState.outputCurrency
+  );
+  const paidConverted = fromBaseCurrency(
+    paidBaseTotal,
+    changeState.outputCurrency
+  );
+  const priceConverted = fromBaseCurrency(
+    priceBase,
+    changeState.outputCurrency
+  );
+
+  changeLabel.textContent = isChange ? "Change" : "Remaining";
+  changeValue.textContent = formatMoney(displayAmountConverted);
+  paidTotalOutput.textContent = formatMoney(paidConverted);
+  priceTotalOutput.textContent = formatMoney(priceConverted);
+  setValueNeutral(changeValue, displayAmountConverted === 0);
+  animateValue(changeValue);
 };
 
 const openTipModal = () => {
@@ -232,6 +355,60 @@ tipOverlay.addEventListener("click", (event) => {
 
 tipClose.addEventListener("click", closeTipModal);
 
+priceInput.addEventListener("input", () => {
+  if (parseFloat(priceInput.value) < 0) priceInput.value = "0";
+  updateChangeOutputs();
+});
+
+paidInput.addEventListener("input", () => {
+  if (parseFloat(paidInput.value) < 0) paidInput.value = "0";
+  changeState.paidManual = true;
+  updateChangeOutputs();
+});
+
+paidSecondaryInput.addEventListener("input", () => {
+  if (parseFloat(paidSecondaryInput.value) < 0) paidSecondaryInput.value = "0";
+  updateChangeOutputs();
+});
+
+useCalcButton.addEventListener("click", () => {
+  changeState.paidManual = false;
+  syncPaidFromCalc();
+  paidInput.focus();
+});
+
+document.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    changeState.priceCurrency = button.dataset.currency;
+    setToggleGroup("price-currency", changeState.priceCurrency);
+    updateChangeOutputs();
+  });
+});
+
+document.querySelectorAll('[data-role="paid-currency"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    changeState.paidCurrency = button.dataset.currency;
+    setToggleGroup("paid-currency", changeState.paidCurrency);
+    updateSecondaryCurrency();
+    updateChangeOutputs();
+  });
+});
+
+document.querySelectorAll('[data-role="output-currency"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    changeState.outputCurrency = button.dataset.currency;
+    setToggleGroup("output-currency", changeState.outputCurrency);
+    updateChangeOutputs();
+  });
+});
+
+splitToggle.addEventListener("click", () => {
+  changeState.splitEnabled = !changeState.splitEnabled;
+  splitToggle.setAttribute("aria-pressed", String(changeState.splitEnabled));
+  splitFields.classList.toggle("is-open", changeState.splitEnabled);
+  updateChangeOutputs();
+});
+
 window.addEventListener("keydown", (event) => {
   if (tipOverlay.classList.contains("open")) {
     if (event.key === "Escape") closeTipModal();
@@ -249,3 +426,5 @@ window.addEventListener("keydown", (event) => {
 updateDisplay();
 setTipPercent(tipPercent);
 updateTipOutputs();
+updateSecondaryCurrency();
+updateChangeOutputs();
