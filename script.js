@@ -1,6 +1,43 @@
 const mainRoot = document.getElementById("calcMain");
 const changeRoot = document.getElementById("calcChange");
 
+let activeKeyboardTarget = "main";
+
+const isTextEntryElement = (element) =>
+  !!element &&
+  (element.tagName === "INPUT" ||
+    element.tagName === "TEXTAREA" ||
+    element.isContentEditable === true);
+
+const shouldMainConsumeTypingEvent = (event) => {
+  const target = event?.target;
+  if (isTextEntryElement(target)) return false;
+  const activeElement = document.activeElement;
+  if (isTextEntryElement(activeElement)) return false;
+  return activeKeyboardTarget === "main";
+};
+
+if (mainRoot) {
+  const setMain = () => {
+    activeKeyboardTarget = "main";
+  };
+  mainRoot.addEventListener("pointerdown", setMain);
+  mainRoot.addEventListener("mousedown", setMain);
+  mainRoot.addEventListener("touchstart", setMain, { passive: true });
+}
+
+if (changeRoot) {
+  const setChange = () => {
+    activeKeyboardTarget = "change";
+  };
+  changeRoot.addEventListener("pointerdown", setChange);
+  changeRoot.addEventListener("mousedown", setChange);
+  changeRoot.addEventListener("touchstart", setChange, { passive: true });
+  changeRoot.addEventListener("focusin", (event) => {
+    if (isTextEntryElement(event.target)) activeKeyboardTarget = "change";
+  });
+}
+
 const display = mainRoot.querySelector("#calc-display");
 const buttons = mainRoot.querySelectorAll(".button-grid .btn");
 const tipButton = mainRoot.querySelector(".btn-tip");
@@ -439,6 +476,7 @@ const triggerError = () => {
 
 buttons.forEach((button) => {
   button.addEventListener("click", () => {
+    activeKeyboardTarget = "main";
     if (button.dataset.number !== undefined) {
       handleNumber(button.dataset.number);
       return;
@@ -712,6 +750,7 @@ if (themeToggle) {
 });
 
 window.addEventListener("keydown", (event) => {
+  if (!shouldMainConsumeTypingEvent(event)) return;
   if (tipOverlay.classList.contains("open")) {
     if (event.key === "Escape") closeTipModal();
     return;
