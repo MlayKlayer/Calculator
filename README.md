@@ -36,5 +36,5 @@ This project explores how far a **minimal UI** can go while still solving real, 
 ## Status
 Stable — actively used.
 
-![Desktop](screenshots/desktop.png)
-![Mobile](screenshots/mobile.png)
+![Desktop](screenshots:desktop.png)
+![Mobile](screenshots:mobile.png)
