@@ -70,6 +70,18 @@ const installHintDismiss = document.getElementById("install-hint-dismiss");
 const themeToggle = document.getElementById("theme-toggle");
 const themeOverlay = document.getElementById("theme-overlay");
 const copyToast = document.getElementById("copy-toast");
+const feedbackFooter = document.getElementById("feedbackFooter");
+const feedbackSlotDesktop = document.getElementById("feedbackSlotDesktop");
+const feedbackSlotMobile = document.getElementById("feedbackSlotMobile");
+
+const placeFeedback = () => {
+  if (!feedbackFooter || !feedbackSlotDesktop || !feedbackSlotMobile) return;
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  const targetSlot = isMobile ? feedbackSlotMobile : feedbackSlotDesktop;
+  if (feedbackFooter.parentElement !== targetSlot) {
+    targetSlot.appendChild(feedbackFooter);
+  }
+};
 
 let displayValue = "0";
 let storedValue = null;
@@ -168,6 +180,9 @@ if (typeof themeQuery.addEventListener === "function") {
 } else if (typeof themeQuery.addListener === "function") {
   themeQuery.addListener(handleThemeQueryChange);
 }
+
+document.addEventListener("DOMContentLoaded", placeFeedback);
+window.addEventListener("resize", placeFeedback);
 
 const operators = {
   "+": (a, b) => a + b,
