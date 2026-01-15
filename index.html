@@ -23,7 +23,8 @@
         <div class="theme-overlay" id="theme-overlay" role="status" aria-live="polite" aria-hidden="true"></div>
       </header>
       <div class="layout">
-        <section id="calcMain" class="calculator" aria-label="Calculator">
+        <div class="calculator-stack">
+          <section id="calcMain" class="calculator" aria-label="Calculator">
           <div class="display" aria-live="polite" aria-atomic="true">
             <div id="calc-display" class="display-value copy-target">0</div>
           </div>
@@ -144,7 +145,9 @@
               </div>
             </div>
           </div>
-        </section>
+          </section>
+          <div id="feedbackSlotDesktop" class="feedback-slot"></div>
+        </div>
 
         <section id="calcChange" class="change-panel" aria-label="Change calculator">
           <header class="panel-header">
@@ -259,9 +262,10 @@
             </div>
           </div>
         </section>
+        <div id="feedbackSlotMobile" class="feedback-slot"></div>
       </div>
     </main>
-    <footer class="page-footer">
+    <footer id="feedbackFooter" class="feedback-footer">
       <a href="https://forms.gle/6zVrLsJuEti8PG819" target="_blank" rel="noopener noreferrer">
         help us get better
       </a>
