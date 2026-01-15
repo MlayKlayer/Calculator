@@ -84,6 +84,24 @@ const formatNumber = (value) => {
   return value;
 };
 
+const parseMoney = (raw) => {
+  if (raw === null || raw === undefined) return 0;
+  let value = String(raw).trim();
+  if (!value) return 0;
+  value = value.replace(/\s+/g, "");
+  value = value.replace(/,/g, ".");
+  value = value.replace(/[^0-9.]/g, "");
+  const firstDot = value.indexOf(".");
+  if (firstDot !== -1) {
+    value =
+      value.slice(0, firstDot + 1) +
+      value.slice(firstDot + 1).replace(/\./g, "");
+  }
+  if (value.endsWith(".")) value = value.slice(0, -1);
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 const normalizeNumberString = (value) => {
   if (typeof value !== "string") return "";
   const trimmed = value.trim();
@@ -110,6 +128,39 @@ const parseLocaleNumber = (value) => {
   const dotted = normalized.replace(",", ".");
   const parsed = Number.parseFloat(dotted);
   return Number.isNaN(parsed) ? Number.NaN : parsed;
+};
+
+const sanitizeMoneyInputValue = (value, cursorPosition) => {
+  let result = "";
+  let separator = null;
+  let newCursor = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    const isDigit = /\d/.test(char);
+    const isSeparator = char === "," || char === ".";
+    const keep = isDigit || (isSeparator && !separator);
+    if (keep) {
+      if (isSeparator && !separator) {
+        separator = char;
+      }
+      result += char;
+    }
+    if (index < cursorPosition && keep) {
+      newCursor += 1;
+    }
+  }
+  return { value: result, cursor: newCursor };
+};
+
+const sanitizeMoneyInput = (input) => {
+  const cursorPosition =
+    input.selectionStart === null ? input.value.length : input.selectionStart;
+  const sanitized = sanitizeMoneyInputValue(input.value, cursorPosition);
+  if (sanitized.value === input.value) return;
+  input.value = sanitized.value;
+  if (input.selectionStart !== null) {
+    input.setSelectionRange(sanitized.cursor, sanitized.cursor);
+  }
 };
 
 const sanitizeNumberInputValue = (value, cursorPosition) => {
@@ -309,9 +360,7 @@ tipButton.addEventListener("click", () => {
 });
 
 const parseBaseAmount = () => {
-  const value = parseLocaleNumber(baseAmountInput.value);
-  if (Number.isNaN(value) || value < 0) return 0;
-  return value;
+  return Math.max(0, parseMoney(baseAmountInput.value));
 };
 
 const setValueNeutral = (element, isNeutral) => {
@@ -361,9 +410,7 @@ const setTipPercent = (value) => {
 };
 
 const parseMoneyInput = (input) => {
-  const value = parseLocaleNumber(input.value);
-  if (Number.isNaN(value) || value < 0) return 0;
-  return value;
+  return Math.max(0, parseMoney(input.value));
 };
 
 const toBaseCurrency = (amount, currency) =>
@@ -468,8 +515,7 @@ const closeTipModal = () => {
 };
 
 baseAmountInput.addEventListener("input", () => {
-  sanitizeNumericInput(baseAmountInput);
-  if (parseLocaleNumber(baseAmountInput.value) < 0) baseAmountInput.value = "0";
+  sanitizeMoneyInput(baseAmountInput);
   updateTipOutputs();
 });
 
@@ -511,22 +557,18 @@ tipOverlay.addEventListener("click", (event) => {
 tipClose.addEventListener("click", closeTipModal);
 
 priceInput.addEventListener("input", () => {
-  sanitizeNumericInput(priceInput);
-  if (parseLocaleNumber(priceInput.value) < 0) priceInput.value = "0";
+  sanitizeMoneyInput(priceInput);
   updateChangeOutputs();
 });
 
 paidInput.addEventListener("input", () => {
-  sanitizeNumericInput(paidInput);
-  if (parseLocaleNumber(paidInput.value) < 0) paidInput.value = "0";
+  sanitizeMoneyInput(paidInput);
   changeState.paidManual = true;
   updateChangeOutputs();
 });
 
 paidSecondaryInput.addEventListener("input", () => {
-  sanitizeNumericInput(paidSecondaryInput);
-  if (parseLocaleNumber(paidSecondaryInput.value) < 0)
-    paidSecondaryInput.value = "0";
+  sanitizeMoneyInput(paidSecondaryInput);
   updateChangeOutputs();
 });
 
