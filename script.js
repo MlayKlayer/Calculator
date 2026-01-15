@@ -84,6 +84,67 @@ const formatNumber = (value) => {
   return value;
 };
 
+const normalizeNumberString = (value) => {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const noSpaces = trimmed.replace(/\s+/g, "");
+  let result = "";
+  let separator = null;
+  for (const char of noSpaces) {
+    if (/\d/.test(char)) {
+      result += char;
+      continue;
+    }
+    if ((char === "," || char === ".") && !separator) {
+      separator = char;
+      result += char;
+    }
+  }
+  return result;
+};
+
+const parseLocaleNumber = (value) => {
+  const normalized = normalizeNumberString(value);
+  if (!normalized) return Number.NaN;
+  const dotted = normalized.replace(",", ".");
+  const parsed = Number.parseFloat(dotted);
+  return Number.isNaN(parsed) ? Number.NaN : parsed;
+};
+
+const sanitizeNumberInputValue = (value, cursorPosition) => {
+  let result = "";
+  let separator = null;
+  let newCursor = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    const isDigit = /\d/.test(char);
+    const isSeparator = char === "," || char === ".";
+    const keep = isDigit || (isSeparator && !separator);
+    if (keep) {
+      if (isSeparator && !separator) {
+        separator = char;
+      }
+      result += char;
+    }
+    if (index < cursorPosition && keep) {
+      newCursor += 1;
+    }
+  }
+  return { value: result, cursor: newCursor };
+};
+
+const sanitizeNumericInput = (input) => {
+  const cursorPosition =
+    input.selectionStart === null ? input.value.length : input.selectionStart;
+  const sanitized = sanitizeNumberInputValue(input.value, cursorPosition);
+  if (sanitized.value === input.value) return;
+  input.value = sanitized.value;
+  if (input.selectionStart !== null) {
+    input.setSelectionRange(sanitized.cursor, sanitized.cursor);
+  }
+};
+
 function getCalcValue() {
   if (hasError) return 0;
   const value = parseFloat(displayValue);
@@ -248,7 +309,7 @@ tipButton.addEventListener("click", () => {
 });
 
 const parseBaseAmount = () => {
-  const value = parseFloat(baseAmountInput.value);
+  const value = parseLocaleNumber(baseAmountInput.value);
   if (Number.isNaN(value) || value < 0) return 0;
   return value;
 };
@@ -300,7 +361,7 @@ const setTipPercent = (value) => {
 };
 
 const parseMoneyInput = (input) => {
-  const value = parseFloat(input.value);
+  const value = parseLocaleNumber(input.value);
   if (Number.isNaN(value) || value < 0) return 0;
   return value;
 };
@@ -407,7 +468,8 @@ const closeTipModal = () => {
 };
 
 baseAmountInput.addEventListener("input", () => {
-  if (parseFloat(baseAmountInput.value) < 0) baseAmountInput.value = "0";
+  sanitizeNumericInput(baseAmountInput);
+  if (parseLocaleNumber(baseAmountInput.value) < 0) baseAmountInput.value = "0";
   updateTipOutputs();
 });
 
@@ -426,7 +488,8 @@ tipChips.forEach((chip) => {
 });
 
 customTipInput.addEventListener("input", () => {
-  const value = parseFloat(customTipInput.value);
+  sanitizeNumericInput(customTipInput);
+  const value = parseLocaleNumber(customTipInput.value);
   tipChips.forEach((chip) => chip.classList.remove("active"));
   tipPercent = Number.isNaN(value) ? 0 : Math.min(50, Math.max(0, value));
   tipCustomPercentEnabled = customTipInput.value.trim() !== "";
@@ -448,18 +511,22 @@ tipOverlay.addEventListener("click", (event) => {
 tipClose.addEventListener("click", closeTipModal);
 
 priceInput.addEventListener("input", () => {
-  if (parseFloat(priceInput.value) < 0) priceInput.value = "0";
+  sanitizeNumericInput(priceInput);
+  if (parseLocaleNumber(priceInput.value) < 0) priceInput.value = "0";
   updateChangeOutputs();
 });
 
 paidInput.addEventListener("input", () => {
-  if (parseFloat(paidInput.value) < 0) paidInput.value = "0";
+  sanitizeNumericInput(paidInput);
+  if (parseLocaleNumber(paidInput.value) < 0) paidInput.value = "0";
   changeState.paidManual = true;
   updateChangeOutputs();
 });
 
 paidSecondaryInput.addEventListener("input", () => {
-  if (parseFloat(paidSecondaryInput.value) < 0) paidSecondaryInput.value = "0";
+  sanitizeNumericInput(paidSecondaryInput);
+  if (parseLocaleNumber(paidSecondaryInput.value) < 0)
+    paidSecondaryInput.value = "0";
   updateChangeOutputs();
 });
 
