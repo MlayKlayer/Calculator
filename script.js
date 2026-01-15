@@ -27,6 +27,8 @@ const paidTotalOutput = document.getElementById("paid-total");
 const priceTotalOutput = document.getElementById("price-total");
 const changeHint = document.getElementById("change-hint");
 const paidInputRow = paidInput.closest(".input-row");
+const installHint = document.getElementById("install-hint");
+const installHintDismiss = document.getElementById("install-hint-dismiss");
 
 let displayValue = "0";
 let storedValue = null;
@@ -37,6 +39,7 @@ let hasError = false;
 let people = 1;
 let tipPercent = 10;
 let roundPerPerson = false;
+let tipCustomPercentEnabled = false;
 const FX_RATE = 1.95583;
 const changeState = {
   priceCurrency: "EUR",
@@ -44,6 +47,28 @@ const changeState = {
   outputCurrency: "EUR",
   splitEnabled: false,
   paidManual: false,
+};
+
+const PREFS_KEY = "mincalc.prefs.v1";
+const INSTALL_HINT_KEY = "mincalc.installHintDismissed.v1";
+let deferredInstallPrompt = null;
+
+const safeStorage = {
+  get(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      return null;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      return null;
+    }
+    return true;
+  },
 };
 
 const operators = {
@@ -68,6 +93,42 @@ function getCalcValue() {
 const updateDisplay = () => {
   display.textContent = formatNumber(displayValue);
   tipButton.disabled = hasError;
+};
+
+const clampNumber = (value, min, max, fallback) => {
+  if (typeof value !== "number" || Number.isNaN(value)) return fallback;
+  return Math.min(max, Math.max(min, value));
+};
+
+const normalizeCurrency = (value, fallback) => {
+  if (value === "EUR" || value === "BGN") return value;
+  return fallback;
+};
+
+const readPrefs = () => {
+  const raw = safeStorage.get(PREFS_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+};
+
+const writePrefs = () => {
+  const prefs = {
+    changeOutputCurrency: changeState.outputCurrency,
+    priceCurrency: changeState.priceCurrency,
+    paidCurrency: changeState.paidCurrency,
+    splitPaymentEnabled: changeState.splitEnabled,
+    tipPeople: people,
+    tipPercent: tipPercent,
+    tipRoundPerPerson: roundPerPerson,
+    tipCustomPercentEnabled: tipCustomPercentEnabled,
+  };
+  safeStorage.set(PREFS_KEY, JSON.stringify(prefs));
 };
 
 const clearAll = () => {
@@ -224,15 +285,18 @@ const setPeople = (value) => {
   people = Math.min(10, Math.max(1, value));
   peopleCount.textContent = String(people);
   updateTipOutputs();
+  writePrefs();
 };
 
 const setTipPercent = (value) => {
   tipPercent = Math.min(50, Math.max(0, value));
   customTipInput.value = "";
+  tipCustomPercentEnabled = false;
   tipChips.forEach((chip) => {
     chip.classList.toggle("active", Number(chip.dataset.tip) === tipPercent);
   });
   updateTipOutputs();
+  writePrefs();
 };
 
 const parseMoneyInput = (input) => {
@@ -324,7 +388,13 @@ const updateChangeOutputs = () => {
 const openTipModal = () => {
   const currentValue = hasError ? 0 : parseFloat(displayValue) || 0;
   baseAmountInput.value = currentValue.toFixed(2);
-  setTipPercent(tipPercent);
+  if (tipCustomPercentEnabled) {
+    customTipInput.value = String(tipPercent);
+    tipChips.forEach((chip) => chip.classList.remove("active"));
+    updateTipOutputs();
+  } else {
+    setTipPercent(tipPercent);
+  }
   setPeople(people);
   tipOverlay.classList.add("open");
   tipOverlay.setAttribute("aria-hidden", "false");
@@ -359,13 +429,16 @@ customTipInput.addEventListener("input", () => {
   const value = parseFloat(customTipInput.value);
   tipChips.forEach((chip) => chip.classList.remove("active"));
   tipPercent = Number.isNaN(value) ? 0 : Math.min(50, Math.max(0, value));
+  tipCustomPercentEnabled = customTipInput.value.trim() !== "";
   updateTipOutputs();
+  writePrefs();
 });
 
 roundToggle.addEventListener("change", () => {
   roundPerPerson = roundToggle.checked;
   roundingNote.classList.toggle("is-visible", roundPerPerson);
   updateTipOutputs();
+  writePrefs();
 });
 
 tipOverlay.addEventListener("click", (event) => {
@@ -402,6 +475,7 @@ document.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
     changeState.priceCurrency = button.dataset.currency;
     setToggleGroup("price-currency", changeState.priceCurrency);
     updateChangeOutputs();
+    writePrefs();
   });
 });
 
@@ -411,6 +485,7 @@ document.querySelectorAll('[data-role="paid-currency"]').forEach((button) => {
     setToggleGroup("paid-currency", changeState.paidCurrency);
     updateSecondaryCurrency();
     updateChangeOutputs();
+    writePrefs();
   });
 });
 
@@ -419,6 +494,7 @@ document.querySelectorAll('[data-role="output-currency"]').forEach((button) => {
     changeState.outputCurrency = button.dataset.currency;
     setToggleGroup("output-currency", changeState.outputCurrency);
     updateChangeOutputs();
+    writePrefs();
   });
 });
 
@@ -427,6 +503,7 @@ splitToggle.addEventListener("click", () => {
   splitToggle.setAttribute("aria-pressed", String(changeState.splitEnabled));
   splitFields.classList.toggle("is-open", changeState.splitEnabled);
   updateChangeOutputs();
+  writePrefs();
 });
 
 window.addEventListener("keydown", (event) => {
@@ -443,10 +520,116 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") clearAll();
 });
 
+const applyPrefs = () => {
+  const prefs = readPrefs();
+  if (!prefs) return;
+
+  changeState.outputCurrency = normalizeCurrency(
+    prefs.changeOutputCurrency,
+    changeState.outputCurrency
+  );
+  changeState.priceCurrency = normalizeCurrency(
+    prefs.priceCurrency,
+    changeState.priceCurrency
+  );
+  changeState.paidCurrency = normalizeCurrency(
+    prefs.paidCurrency,
+    changeState.paidCurrency
+  );
+  changeState.splitEnabled =
+    typeof prefs.splitPaymentEnabled === "boolean"
+      ? prefs.splitPaymentEnabled
+      : changeState.splitEnabled;
+
+  const nextPeople = clampNumber(prefs.tipPeople, 1, 10, people);
+  const nextTipPercent = clampNumber(prefs.tipPercent, 0, 50, tipPercent);
+  const nextRound =
+    typeof prefs.tipRoundPerPerson === "boolean"
+      ? prefs.tipRoundPerPerson
+      : roundPerPerson;
+  const nextCustomEnabled =
+    typeof prefs.tipCustomPercentEnabled === "boolean"
+      ? prefs.tipCustomPercentEnabled
+      : tipCustomPercentEnabled;
+
+  people = nextPeople;
+  tipPercent = nextTipPercent;
+  roundPerPerson = nextRound;
+  tipCustomPercentEnabled = nextCustomEnabled;
+};
+
+const applyPrefsToUI = () => {
+  setToggleGroup("output-currency", changeState.outputCurrency);
+  setToggleGroup("price-currency", changeState.priceCurrency);
+  setToggleGroup("paid-currency", changeState.paidCurrency);
+  updateSecondaryCurrency();
+
+  splitToggle.setAttribute("aria-pressed", String(changeState.splitEnabled));
+  splitFields.classList.toggle("is-open", changeState.splitEnabled);
+
+  peopleCount.textContent = String(people);
+  if (tipCustomPercentEnabled) {
+    customTipInput.value = String(tipPercent);
+    tipChips.forEach((chip) => chip.classList.remove("active"));
+    updateTipOutputs();
+  } else {
+    setTipPercent(tipPercent);
+  }
+  roundToggle.checked = roundPerPerson;
+  roundingNote.classList.toggle("is-visible", roundPerPerson);
+};
+
+const isInstalled = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true;
+
+const isMobileDevice = () =>
+  /iphone|ipad|ipod|android/i.test(window.navigator.userAgent);
+
+const isInstallHintDismissed = () => safeStorage.get(INSTALL_HINT_KEY) === "1";
+
+const showInstallHint = () => {
+  if (!installHint) return;
+  installHint.classList.add("is-visible");
+};
+
+const hideInstallHint = () => {
+  if (!installHint) return;
+  installHint.classList.remove("is-visible");
+};
+
+const maybeShowInstallHint = () => {
+  if (isInstalled()) return;
+  if (isInstallHintDismissed()) return;
+  const supportedInstall = Boolean(deferredInstallPrompt);
+  if (supportedInstall || isMobileDevice()) {
+    showInstallHint();
+  }
+};
+
+if (installHintDismiss) {
+  installHintDismiss.addEventListener("click", () => {
+    safeStorage.set(INSTALL_HINT_KEY, "1");
+    hideInstallHint();
+  });
+}
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  maybeShowInstallHint();
+});
+
 updateDisplay();
-roundToggle.checked = roundPerPerson;
-roundingNote.classList.toggle("is-visible", roundPerPerson);
-setTipPercent(tipPercent);
+applyPrefs();
+applyPrefsToUI();
 updateTipOutputs();
-updateSecondaryCurrency();
 updateChangeOutputs();
+
+maybeShowInstallHint();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}

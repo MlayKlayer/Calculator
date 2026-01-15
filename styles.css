@@ -605,6 +605,48 @@ body {
   opacity: 0.78;
 }
 
+.install-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: rgba(17, 23, 34, 0.95);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 20;
+}
+
+.install-hint.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -4px);
+}
+
+.install-hint-btn {
+  border: none;
+  background: rgba(79, 140, 255, 0.2);
+  color: var(--accent-blue);
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.install-hint-btn:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 @keyframes valueChange {
   0% {
     opacity: 0.6;
@@ -659,5 +701,11 @@ body {
 
   .modal-overlay.open .tip-modal {
     transform: translateY(0);
+  }
+
+  .install-hint {
+    width: calc(100% - 24px);
+    justify-content: space-between;
+    border-radius: var(--radius-md);
   }
 }

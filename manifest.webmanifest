@@ -1,0 +1,22 @@
+{
+  "name": "Minimal Calculator",
+  "short_name": "Calculator",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#0b0f14",
+  "background_color": "#0b0f14",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "./icons/maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

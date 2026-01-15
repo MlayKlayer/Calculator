@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minimal Calculator + Tip Split</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#0b0f14" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="apple-touch-icon" href="./icons/icon.svg" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -245,6 +253,13 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="install-hint" id="install-hint" role="status" aria-live="polite">
+      <span>Install for quick access</span>
+      <button class="install-hint-btn" id="install-hint-dismiss" type="button">
+        Got it
+      </button>
     </div>
 
     <script src="script.js"></script>
