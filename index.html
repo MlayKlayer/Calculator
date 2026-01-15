@@ -16,10 +16,16 @@
   </head>
   <body>
     <main class="app">
+      <header class="app-header">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cycle theme">
+          By MlayKlayer
+        </button>
+        <div class="theme-overlay" id="theme-overlay" role="status" aria-live="polite" aria-hidden="true"></div>
+      </header>
       <div class="layout">
-        <section class="calculator" aria-label="Calculator">
+        <section id="calcMain" class="calculator" aria-label="Calculator">
           <div class="display" aria-live="polite" aria-atomic="true">
-            <div id="calc-display" class="display-value">0</div>
+            <div id="calc-display" class="display-value copy-target">0</div>
           </div>
           <div class="button-grid" role="group" aria-label="Calculator buttons">
             <button class="btn btn-utility" data-action="ac" aria-label="All clear">AC</button>
@@ -47,9 +53,100 @@
             <button class="btn" data-number=".">.</button>
             <button class="btn btn-equals" data-action="equals" aria-label="Equals">=</button>
           </div>
+
+          <div class="modal-overlay" id="tip-overlay" aria-hidden="true">
+            <div
+              class="tip-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="tip-title"
+            >
+              <header class="tip-header">
+                <h2 id="tip-title">Tip & Split</h2>
+                <button class="icon-button" id="tip-close" aria-label="Close tip calculator">×</button>
+              </header>
+
+              <div class="tip-body">
+                <label class="input-group">
+                  <span class="label">Base amount</span>
+                  <div class="input-row">
+                    <span class="prefix">$</span>
+                    <input
+                      id="base-amount"
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      spellcheck="false"
+                      pattern="[0-9]+([.,][0-9]+)?"
+                      aria-label="Base amount"
+                    />
+                  </div>
+                </label>
+
+                <div class="split-group" aria-label="Split between people">
+                  <span class="label">People</span>
+                  <div class="stepper" role="group" aria-label="Number of people">
+                    <button class="stepper-btn" data-step="-1" aria-label="Decrease people">
+                      −
+                    </button>
+                    <div id="people-count" class="stepper-value" aria-live="polite">1</div>
+                    <button class="stepper-btn" data-step="1" aria-label="Increase people">
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div class="tip-section">
+                  <span class="label">Tip %</span>
+                  <div class="tip-presets" role="group" aria-label="Tip presets">
+                    <button class="chip" data-tip="10">10%</button>
+                    <button class="chip" data-tip="15">15%</button>
+                    <button class="chip" data-tip="20">20%</button>
+                    <div class="custom-tip">
+                      <input
+                        id="custom-tip"
+                        type="number"
+                        min="0"
+                        max="50"
+                        step="1"
+                        inputmode="numeric"
+                        aria-label="Custom tip percentage"
+                        placeholder="Custom"
+                      />
+                      <span class="suffix">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tip-options">
+                  <label class="round-toggle">
+                    <input id="round-per-person" type="checkbox" />
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span class="toggle-label">Round per person</span>
+                  </label>
+                  <span id="rounding-note" class="rounding-note">Totals may vary due to rounding.</span>
+                </div>
+
+                <div class="results">
+                  <div class="result-main">
+                    <span class="result-label">Per person</span>
+                    <span id="per-person" class="result-value copy-target">$0.00</span>
+                  </div>
+                  <div class="result-row">
+                    <span>Tip total</span>
+                    <span id="tip-total">$0.00</span>
+                  </div>
+                  <div class="result-row">
+                    <span>Total amount</span>
+                    <span id="total-amount">$0.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
-        <section class="change-panel" aria-label="Change calculator">
+        <section id="calcChange" class="change-panel" aria-label="Change calculator">
           <header class="panel-header">
             <div>
               <h2>Change Calculator</h2>
@@ -92,9 +189,6 @@
             <label class="input-group">
               <div class="label-row">
                 <span class="label">Paid amount</span>
-                <button class="ghost-action" id="use-calc" type="button" aria-label="Use calculator value">
-                  Use calc
-                </button>
               </div>
               <div class="input-row">
                 <input
@@ -149,7 +243,7 @@
             <div class="change-output" aria-live="polite">
               <div class="change-main">
                 <span id="change-label" class="result-label">Change</span>
-                <span id="change-value" class="change-value">0.00</span>
+                <span id="change-value" class="change-value copy-target">0.00</span>
               </div>
               <div id="change-hint" class="change-hint">
                 Add more payment to reach total
@@ -168,102 +262,14 @@
       </div>
     </main>
 
-    <div class="modal-overlay" id="tip-overlay" aria-hidden="true">
-      <div
-        class="tip-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="tip-title"
-      >
-        <header class="tip-header">
-          <h2 id="tip-title">Tip & Split</h2>
-          <button class="icon-button" id="tip-close" aria-label="Close tip calculator">×</button>
-        </header>
-
-        <div class="tip-body">
-          <label class="input-group">
-            <span class="label">Base amount</span>
-            <div class="input-row">
-              <span class="prefix">$</span>
-              <input
-                id="base-amount"
-                type="text"
-                inputmode="decimal"
-                autocomplete="off"
-                spellcheck="false"
-                pattern="[0-9]+([.,][0-9]+)?"
-                aria-label="Base amount"
-              />
-            </div>
-          </label>
-
-          <div class="split-group" aria-label="Split between people">
-            <span class="label">People</span>
-            <div class="stepper" role="group" aria-label="Number of people">
-              <button class="stepper-btn" data-step="-1" aria-label="Decrease people">
-                −
-              </button>
-              <div id="people-count" class="stepper-value" aria-live="polite">1</div>
-              <button class="stepper-btn" data-step="1" aria-label="Increase people">
-                +
-              </button>
-            </div>
-          </div>
-
-          <div class="tip-section">
-            <span class="label">Tip %</span>
-            <div class="tip-presets" role="group" aria-label="Tip presets">
-              <button class="chip" data-tip="10">10%</button>
-              <button class="chip" data-tip="15">15%</button>
-              <button class="chip" data-tip="20">20%</button>
-              <div class="custom-tip">
-                <input
-                  id="custom-tip"
-                  type="number"
-                  min="0"
-                  max="50"
-                  step="1"
-                  inputmode="numeric"
-                  aria-label="Custom tip percentage"
-                  placeholder="Custom"
-                />
-                <span class="suffix">%</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tip-options">
-            <label class="round-toggle">
-              <input id="round-per-person" type="checkbox" />
-              <span class="toggle-track" aria-hidden="true"></span>
-              <span class="toggle-label">Round per person</span>
-            </label>
-            <span id="rounding-note" class="rounding-note">Totals may vary due to rounding.</span>
-          </div>
-
-          <div class="results">
-            <div class="result-main">
-              <span class="result-label">Per person</span>
-              <span id="per-person" class="result-value">$0.00</span>
-            </div>
-            <div class="result-row">
-              <span>Tip total</span>
-              <span id="tip-total">$0.00</span>
-            </div>
-            <div class="result-row">
-              <span>Total amount</span>
-              <span id="total-amount">$0.00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="install-hint" id="install-hint" role="status" aria-live="polite">
       <span>Install for quick access</span>
       <button class="install-hint-btn" id="install-hint-dismiss" type="button">
         Got it
       </button>
+    </div>
+    <div class="copy-toast" id="copy-toast" role="status" aria-live="polite">
+      Copied!
     </div>
 
     <script src="script.js"></script>

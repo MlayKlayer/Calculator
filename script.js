@@ -1,34 +1,38 @@
-const display = document.getElementById("calc-display");
-const buttons = document.querySelectorAll(".button-grid .btn");
-const tipButton = document.querySelector(".btn-tip");
+const mainRoot = document.getElementById("calcMain");
+const changeRoot = document.getElementById("calcChange");
 
-const tipOverlay = document.getElementById("tip-overlay");
-const tipClose = document.getElementById("tip-close");
-const baseAmountInput = document.getElementById("base-amount");
-const peopleCount = document.getElementById("people-count");
-const stepperButtons = document.querySelectorAll(".stepper-btn");
-const tipChips = document.querySelectorAll(".chip");
-const customTipInput = document.getElementById("custom-tip");
-const roundToggle = document.getElementById("round-per-person");
-const roundingNote = document.getElementById("rounding-note");
+const display = mainRoot.querySelector("#calc-display");
+const buttons = mainRoot.querySelectorAll(".button-grid .btn");
+const tipButton = mainRoot.querySelector(".btn-tip");
 
-const perPersonOutput = document.getElementById("per-person");
-const tipTotalOutput = document.getElementById("tip-total");
-const totalAmountOutput = document.getElementById("total-amount");
-const priceInput = document.getElementById("product-price");
-const paidInput = document.getElementById("paid-amount");
-const paidSecondaryInput = document.getElementById("paid-amount-secondary");
-const useCalcButton = document.getElementById("use-calc");
-const splitToggle = document.getElementById("split-toggle");
-const splitFields = document.getElementById("split-fields");
-const changeLabel = document.getElementById("change-label");
-const changeValue = document.getElementById("change-value");
-const paidTotalOutput = document.getElementById("paid-total");
-const priceTotalOutput = document.getElementById("price-total");
-const changeHint = document.getElementById("change-hint");
-const paidInputRow = paidInput.closest(".input-row");
+const tipOverlay = mainRoot.querySelector("#tip-overlay");
+const tipClose = mainRoot.querySelector("#tip-close");
+const baseAmountInput = mainRoot.querySelector("#base-amount");
+const peopleCount = mainRoot.querySelector("#people-count");
+const stepperButtons = mainRoot.querySelectorAll(".stepper-btn");
+const tipChips = mainRoot.querySelectorAll(".chip");
+const customTipInput = mainRoot.querySelector("#custom-tip");
+const roundToggle = mainRoot.querySelector("#round-per-person");
+const roundingNote = mainRoot.querySelector("#rounding-note");
+
+const perPersonOutput = mainRoot.querySelector("#per-person");
+const tipTotalOutput = mainRoot.querySelector("#tip-total");
+const totalAmountOutput = mainRoot.querySelector("#total-amount");
+const priceInput = changeRoot.querySelector("#product-price");
+const paidInput = changeRoot.querySelector("#paid-amount");
+const paidSecondaryInput = changeRoot.querySelector("#paid-amount-secondary");
+const splitToggle = changeRoot.querySelector("#split-toggle");
+const splitFields = changeRoot.querySelector("#split-fields");
+const changeLabel = changeRoot.querySelector("#change-label");
+const changeValue = changeRoot.querySelector("#change-value");
+const paidTotalOutput = changeRoot.querySelector("#paid-total");
+const priceTotalOutput = changeRoot.querySelector("#price-total");
+const changeHint = changeRoot.querySelector("#change-hint");
 const installHint = document.getElementById("install-hint");
 const installHintDismiss = document.getElementById("install-hint-dismiss");
+const themeToggle = document.getElementById("theme-toggle");
+const themeOverlay = document.getElementById("theme-overlay");
+const copyToast = document.getElementById("copy-toast");
 
 let displayValue = "0";
 let storedValue = null;
@@ -46,11 +50,11 @@ const changeState = {
   paidCurrency: "EUR",
   outputCurrency: "EUR",
   splitEnabled: false,
-  paidManual: false,
 };
 
 const PREFS_KEY = "mincalc.prefs.v1";
 const INSTALL_HINT_KEY = "mincalc.installHintDismissed.v1";
+const THEME_KEY = "themeMode";
 let deferredInstallPrompt = null;
 
 const safeStorage = {
@@ -70,6 +74,63 @@ const safeStorage = {
     return true;
   },
 };
+
+const themeModes = ["dark", "light", "auto"];
+let themeMode = themeModes.includes(safeStorage.get(THEME_KEY))
+  ? safeStorage.get(THEME_KEY)
+  : "dark";
+const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+let themeOverlayTimeout = null;
+
+const setThemeDataset = (mode) => {
+  document.documentElement.dataset.theme = mode;
+};
+
+const applyAutoTheme = () => {
+  setThemeDataset(themeQuery.matches ? "dark" : "light");
+};
+
+const applyThemeMode = (mode, { persist = true, announce = false } = {}) => {
+  if (!themeModes.includes(mode)) return;
+  themeMode = mode;
+  if (persist) {
+    safeStorage.set(THEME_KEY, mode);
+  }
+  if (mode === "auto") {
+    applyAutoTheme();
+  } else {
+    setThemeDataset(mode);
+  }
+  if (announce) {
+    showThemeOverlay(mode);
+  }
+};
+
+const showThemeOverlay = (mode) => {
+  if (!themeOverlay) return;
+  themeOverlay.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+  themeOverlay.classList.add("is-visible");
+  themeOverlay.setAttribute("aria-hidden", "false");
+  if (themeOverlayTimeout) {
+    window.clearTimeout(themeOverlayTimeout);
+  }
+  themeOverlayTimeout = window.setTimeout(() => {
+    themeOverlay.classList.remove("is-visible");
+    themeOverlay.setAttribute("aria-hidden", "true");
+  }, 1000);
+};
+
+const handleThemeQueryChange = () => {
+  if (themeMode === "auto") {
+    applyAutoTheme();
+  }
+};
+
+if (typeof themeQuery.addEventListener === "function") {
+  themeQuery.addEventListener("change", handleThemeQueryChange);
+} else if (typeof themeQuery.addListener === "function") {
+  themeQuery.addListener(handleThemeQueryChange);
+}
 
 const operators = {
   "+": (a, b) => a + b,
@@ -128,6 +189,54 @@ const parseLocaleNumber = (value) => {
   const dotted = normalized.replace(",", ".");
   const parsed = Number.parseFloat(dotted);
   return Number.isNaN(parsed) ? Number.NaN : parsed;
+};
+
+let copyToastTimeout = null;
+
+const showCopyToast = () => {
+  if (!copyToast) return;
+  copyToast.classList.add("is-visible");
+  if (copyToastTimeout) {
+    window.clearTimeout(copyToastTimeout);
+  }
+  copyToastTimeout = window.setTimeout(() => {
+    copyToast.classList.remove("is-visible");
+  }, 1000);
+};
+
+const copyTextToClipboard = async (text) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+};
+
+const getCopyText = (element) => {
+  const text = element.textContent?.trim() ?? "";
+  if (!text) return null;
+  const numeric = parseLocaleNumber(text);
+  if (!Number.isFinite(numeric) || Math.abs(numeric) === 0) return null;
+  return text;
+};
+
+const handleCopy = async (element) => {
+  const text = getCopyText(element);
+  if (!text) return;
+  try {
+    await copyTextToClipboard(text);
+    showCopyToast();
+  } catch (error) {
+    showCopyToast();
+  }
 };
 
 const sanitizeMoneyInputValue = (value, cursorPosition) => {
@@ -195,12 +304,6 @@ const sanitizeNumericInput = (input) => {
     input.setSelectionRange(sanitized.cursor, sanitized.cursor);
   }
 };
-
-function getCalcValue() {
-  if (hasError) return 0;
-  const value = parseFloat(displayValue);
-  return Number.isNaN(value) ? 0 : value;
-}
 
 const updateDisplay = () => {
   display.textContent = formatNumber(displayValue);
@@ -422,7 +525,7 @@ const fromBaseCurrency = (amount, currency) =>
 const formatMoney = (value) => value.toFixed(2);
 
 const setToggleGroup = (role, currency) => {
-  const buttons = document.querySelectorAll(`[data-role="${role}"]`);
+  const buttons = changeRoot.querySelectorAll(`[data-role="${role}"]`);
   buttons.forEach((button) => {
     const isActive = button.dataset.currency === currency;
     button.classList.toggle("active", isActive);
@@ -432,26 +535,12 @@ const setToggleGroup = (role, currency) => {
 
 const updateSecondaryCurrency = () => {
   const secondaryCurrency = changeState.paidCurrency === "EUR" ? "BGN" : "EUR";
-  const secondaryButton = document.querySelector(
+  const secondaryButton = changeRoot.querySelector(
     '[data-role="paid-secondary-currency"]'
   );
   secondaryButton.dataset.currency = secondaryCurrency;
   secondaryButton.textContent = secondaryCurrency;
   secondaryButton.setAttribute("aria-pressed", "true");
-};
-
-function syncPaidFromCalc() {
-  if (changeState.paidManual) return;
-  const calcValue = getCalcValue();
-  paidInput.value = formatMoney(calcValue);
-  updateChangeOutputs();
-}
-
-const flashPaidInput = () => {
-  if (!paidInputRow) return;
-  paidInputRow.classList.remove("flash");
-  void paidInputRow.offsetWidth;
-  paidInputRow.classList.add("flash");
 };
 
 const updateChangeOutputs = () => {
@@ -563,7 +652,6 @@ priceInput.addEventListener("input", () => {
 
 paidInput.addEventListener("input", () => {
   sanitizeMoneyInput(paidInput);
-  changeState.paidManual = true;
   updateChangeOutputs();
 });
 
@@ -572,14 +660,7 @@ paidSecondaryInput.addEventListener("input", () => {
   updateChangeOutputs();
 });
 
-useCalcButton.addEventListener("click", () => {
-  changeState.paidManual = false;
-  syncPaidFromCalc();
-  changeState.paidManual = true;
-  flashPaidInput();
-});
-
-document.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
+changeRoot.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
   button.addEventListener("click", () => {
     changeState.priceCurrency = button.dataset.currency;
     setToggleGroup("price-currency", changeState.priceCurrency);
@@ -588,7 +669,7 @@ document.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
   });
 });
 
-document.querySelectorAll('[data-role="paid-currency"]').forEach((button) => {
+changeRoot.querySelectorAll('[data-role="paid-currency"]').forEach((button) => {
   button.addEventListener("click", () => {
     changeState.paidCurrency = button.dataset.currency;
     setToggleGroup("paid-currency", changeState.paidCurrency);
@@ -598,7 +679,7 @@ document.querySelectorAll('[data-role="paid-currency"]').forEach((button) => {
   });
 });
 
-document.querySelectorAll('[data-role="output-currency"]').forEach((button) => {
+changeRoot.querySelectorAll('[data-role="output-currency"]').forEach((button) => {
   button.addEventListener("click", () => {
     changeState.outputCurrency = button.dataset.currency;
     setToggleGroup("output-currency", changeState.outputCurrency);
@@ -613,6 +694,21 @@ splitToggle.addEventListener("click", () => {
   splitFields.classList.toggle("is-open", changeState.splitEnabled);
   updateChangeOutputs();
   writePrefs();
+});
+
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    const currentIndex = themeModes.indexOf(themeMode);
+    const nextMode = themeModes[(currentIndex + 1) % themeModes.length];
+    applyThemeMode(nextMode, { announce: true });
+  });
+}
+
+[display, changeValue, perPersonOutput].forEach((element) => {
+  if (!element) return;
+  element.addEventListener("click", () => {
+    handleCopy(element);
+  });
 });
 
 window.addEventListener("keydown", (event) => {
@@ -730,6 +826,7 @@ window.addEventListener("beforeinstallprompt", (event) => {
 });
 
 updateDisplay();
+applyThemeMode(themeMode, { persist: false });
 applyPrefs();
 applyPrefsToUI();
 updateTipOutputs();

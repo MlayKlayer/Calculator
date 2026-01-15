@@ -3,12 +3,34 @@
   --bg: #0b0f14;
   --surface: #151a22;
   --surface-elevated: #1a2230;
+  --surface-inset: #111722;
   --border: #252f3d;
   --text-primary: #e6e9ef;
   --text-secondary: #9aa4b2;
   --accent-blue: #4f8cff;
   --accent-blue-strong: #3b76f0;
   --accent-gray: #2c3442;
+  --overlay-backdrop: rgba(5, 9, 16, 0.7);
+  --button-bg: #1c2432;
+  --button-hover: #233044;
+  --button-operator: #263246;
+  --button-utility: #202b3a;
+  --button-equals-text: #061226;
+  --button-tip-bg: rgba(79, 140, 255, 0.18);
+  --button-tip-hover: rgba(79, 140, 255, 0.28);
+  --stepper-bg: #233144;
+  --chip-bg: #111722;
+  --chip-active-bg: rgba(79, 140, 255, 0.2);
+  --chip-active-border: rgba(79, 140, 255, 0.5);
+  --custom-tip-border: rgba(79, 140, 255, 0.4);
+  --toggle-track-active-bg: rgba(79, 140, 255, 0.25);
+  --toggle-chip-active-bg: rgba(79, 140, 255, 0.22);
+  --toggle-btn-active-bg: rgba(79, 140, 255, 0.25);
+  --ghost-hover-border: rgba(79, 140, 255, 0.6);
+  --install-bg: rgba(17, 23, 34, 0.95);
+  --install-btn-bg: rgba(79, 140, 255, 0.2);
+  --toast-bg: rgba(17, 23, 34, 0.92);
+  --toast-text: var(--text-primary);
   --focus-ring: rgba(79, 140, 255, 0.45);
   --radius-lg: 24px;
   --radius-md: 16px;
@@ -22,6 +44,43 @@
   --font-lg: clamp(2rem, 7vw, 3.4rem);
   --font-md: 1rem;
   --font-sm: 0.9rem;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-elevated: #f1f4f9;
+  --surface-inset: #e9edf4;
+  --border: #d7deea;
+  --text-primary: #1c2532;
+  --text-secondary: #5f6b7a;
+  --accent-blue: #2f6bff;
+  --accent-blue-strong: #255ad6;
+  --accent-gray: #e4e9f2;
+  --overlay-backdrop: rgba(12, 18, 30, 0.45);
+  --button-bg: #e8edf5;
+  --button-hover: #dde5f0;
+  --button-operator: #e1e7f2;
+  --button-utility: #e3e8f2;
+  --button-equals-text: #f7f9ff;
+  --button-tip-bg: rgba(47, 107, 255, 0.14);
+  --button-tip-hover: rgba(47, 107, 255, 0.22);
+  --stepper-bg: #dfe6f1;
+  --chip-bg: #e8edf5;
+  --chip-active-bg: rgba(47, 107, 255, 0.18);
+  --chip-active-border: rgba(47, 107, 255, 0.45);
+  --custom-tip-border: rgba(47, 107, 255, 0.35);
+  --toggle-track-active-bg: rgba(47, 107, 255, 0.2);
+  --toggle-chip-active-bg: rgba(47, 107, 255, 0.18);
+  --toggle-btn-active-bg: rgba(47, 107, 255, 0.2);
+  --ghost-hover-border: rgba(47, 107, 255, 0.5);
+  --install-bg: rgba(240, 244, 250, 0.96);
+  --install-btn-bg: rgba(47, 107, 255, 0.16);
+  --toast-bg: rgba(34, 41, 54, 0.92);
+  --toast-text: #f7f9ff;
+  --focus-ring: rgba(47, 107, 255, 0.35);
+  --shadow: 0 18px 40px rgba(9, 16, 28, 0.18);
 }
 
 * {
@@ -45,6 +104,47 @@ body {
   margin: var(--space-4);
 }
 
+.app-header {
+  position: relative;
+  text-align: center;
+  margin-bottom: var(--space-3);
+}
+
+.theme-toggle {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+
+.theme-toggle:hover {
+  color: var(--text-primary);
+}
+
+.theme-overlay {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -6px);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.3s ease;
+}
+
+.theme-overlay.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 8px);
+}
+
 .layout {
   display: flex;
   gap: var(--space-4);
@@ -62,7 +162,7 @@ body {
 }
 
 .display {
-  background: #111722;
+  background: var(--surface-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
@@ -104,7 +204,7 @@ body {
   padding: 16px;
   font-size: 1.2rem;
   font-weight: 600;
-  background: #1c2432;
+  background: var(--button-bg);
   color: var(--text-primary);
   cursor: pointer;
   min-height: 52px;
@@ -112,7 +212,7 @@ body {
 }
 
 .btn:hover {
-  background: #233044;
+  background: var(--button-hover);
 }
 
 .btn:active {
@@ -125,17 +225,17 @@ body {
 }
 
 .btn-operator {
-  background: #263246;
+  background: var(--button-operator);
 }
 
 .btn-utility {
-  background: #202b3a;
+  background: var(--button-utility);
   color: var(--text-secondary);
 }
 
 .btn-equals {
   background: var(--accent-blue);
-  color: #061226;
+  color: var(--button-equals-text);
 }
 
 .btn-equals:hover {
@@ -143,12 +243,12 @@ body {
 }
 
 .btn-tip {
-  background: rgba(79, 140, 255, 0.18);
+  background: var(--button-tip-bg);
   color: var(--accent-blue);
 }
 
 .btn-tip:hover {
-  background: rgba(79, 140, 255, 0.28);
+  background: var(--button-tip-hover);
 }
 
 .btn-tip[disabled] {
@@ -159,7 +259,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 9, 16, 0.7);
+  background: var(--overlay-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -239,7 +339,7 @@ body {
 .input-row {
   display: flex;
   align-items: center;
-  background: #111722;
+  background: var(--surface-inset);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 12px 14px;
@@ -271,7 +371,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #111722;
+  background: var(--surface-inset);
   border-radius: var(--radius-md);
   padding: 10px;
   border: 1px solid var(--border);
@@ -279,7 +379,7 @@ body {
 
 .stepper-btn {
   border: none;
-  background: #233144;
+  background: var(--stepper-bg);
   color: var(--text-primary);
   width: 46px;
   height: 46px;
@@ -343,7 +443,7 @@ body {
 }
 
 .round-toggle input:checked + .toggle-track {
-  background: rgba(79, 140, 255, 0.25);
+  background: var(--toggle-track-active-bg);
 }
 
 .round-toggle input:checked + .toggle-track::after {
@@ -370,7 +470,7 @@ body {
 
 .chip {
   border: 1px solid var(--border);
-  background: #111722;
+  background: var(--chip-bg);
   color: var(--text-primary);
   padding: 10px;
   border-radius: var(--radius-sm);
@@ -380,15 +480,15 @@ body {
 }
 
 .chip.active {
-  background: rgba(79, 140, 255, 0.2);
-  border-color: rgba(79, 140, 255, 0.5);
+  background: var(--chip-active-bg);
+  border-color: var(--chip-active-border);
 }
 
 .custom-tip {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  border: 1px dashed rgba(79, 140, 255, 0.4);
+  border: 1px dashed var(--custom-tip-border);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
 }
@@ -403,7 +503,7 @@ body {
 }
 
 .results {
-  background: #111722;
+  background: var(--surface-inset);
   border-radius: var(--radius-md);
   padding: var(--space-3);
   display: flex;
@@ -487,7 +587,7 @@ body {
 
 .ghost-action:hover {
   color: var(--text-primary);
-  border-color: rgba(79, 140, 255, 0.6);
+  border-color: var(--ghost-hover-border);
 }
 
 .currency-toggle {
@@ -511,7 +611,7 @@ body {
 }
 
 .toggle-chip.active {
-  background: rgba(79, 140, 255, 0.22);
+  background: var(--toggle-chip-active-bg);
   color: var(--text-primary);
 }
 
@@ -527,7 +627,7 @@ body {
   gap: var(--space-2);
   padding: var(--space-2);
   border-radius: var(--radius-md);
-  background: #111722;
+  background: var(--surface-inset);
   border: 1px solid var(--border);
 }
 
@@ -542,7 +642,7 @@ body {
 }
 
 .toggle-btn[aria-pressed="true"] {
-  background: rgba(79, 140, 255, 0.25);
+  background: var(--toggle-btn-active-bg);
   color: var(--text-primary);
 }
 
@@ -564,7 +664,7 @@ body {
 }
 
 .change-output {
-  background: #111722;
+  background: var(--surface-inset);
   border-radius: var(--radius-md);
   padding: var(--space-3);
   border: 1px solid var(--border);
@@ -610,7 +710,7 @@ body {
   left: 50%;
   bottom: calc(16px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  background: rgba(17, 23, 34, 0.95);
+  background: var(--install-bg);
   border: 1px solid var(--border);
   color: var(--text-primary);
   padding: 10px 14px;
@@ -634,7 +734,7 @@ body {
 
 .install-hint-btn {
   border: none;
-  background: rgba(79, 140, 255, 0.2);
+  background: var(--install-btn-bg);
   color: var(--accent-blue);
   padding: 6px 12px;
   border-radius: 999px;
@@ -645,6 +745,31 @@ body {
 .install-hint-btn:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+.copy-target {
+  cursor: pointer;
+}
+
+.copy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(22px + env(safe-area-inset-bottom));
+  transform: translate(-50%, 8px);
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 30;
+}
+
+.copy-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -2px);
 }
 
 @keyframes valueChange {
@@ -658,18 +783,7 @@ body {
   }
 }
 
-@keyframes paidFlash {
-  to {
-    box-shadow: 0 0 0 2px rgba(79, 140, 255, 0);
-  }
-}
-
-.input-row.flash {
-  box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.35);
-  animation: paidFlash 150ms ease-out;
-}
-
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   body {
     align-items: flex-start;
   }
@@ -680,6 +794,14 @@ body {
 
   .layout {
     flex-direction: column;
+  }
+
+  #calcChange {
+    order: 0;
+  }
+
+  #calcMain {
+    order: 1;
   }
 
   .calculator {
