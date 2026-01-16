@@ -108,8 +108,6 @@ const feedbackFooter = document.getElementById("feedbackFooter");
 const feedbackSlotDesktop = document.getElementById("feedbackSlotDesktop");
 const feedbackSlotMobile = document.getElementById("feedbackSlotMobile");
 const layoutRoot = document.querySelector(".layout");
-const tipTitle = document.getElementById("tip-title");
-const changeTitle = document.querySelector(".panel-header h2");
 const mobilePortraitQuery = window.matchMedia(
   "(max-width: 768px) and (orientation: portrait)"
 );
@@ -262,6 +260,7 @@ if (typeof themeQuery.addEventListener === "function") {
 }
 
 const PANEL_SWIPE_THRESHOLD = 36;
+const PANEL_SWIPE_TOLERANCE = 48;
 let panelSwipeStart = null;
 
 const shouldHandlePanelGesture = (eventTarget) => {
@@ -270,9 +269,20 @@ const shouldHandlePanelGesture = (eventTarget) => {
   return true;
 };
 
+const getActivePanel = () => layoutRoot?.dataset.activePanel;
+
+const toggleActivePanel = () => {
+  const activePanel = getActivePanel();
+  if (activePanel === "tip") {
+    setActivePanel("change");
+  } else if (activePanel === "change") {
+    setActivePanel("tip");
+  }
+};
+
 const handlePanelSwipeStart = (event) => {
   if (!shouldHandlePanelGesture(event.target)) return;
-  const activePanel = layoutRoot?.dataset.activePanel;
+  const activePanel = getActivePanel();
   if (!activePanel) return;
   if (
     (activePanel === "tip" && event.currentTarget !== mainRoot) ||
@@ -296,19 +306,13 @@ const handlePanelSwipeEnd = (event) => {
   const deltaY = touch.clientY - panelSwipeStart.y;
   panelSwipeStart = null;
   if (Math.abs(deltaX) < PANEL_SWIPE_THRESHOLD) return;
-  if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
-  if (deltaX < 0) {
-    setActivePanel("tip");
-  } else {
-    setActivePanel("change");
-  }
+  if (Math.abs(deltaY) > PANEL_SWIPE_TOLERANCE) return;
+  toggleActivePanel();
 };
 
 const setupPanelNavigation = () => {
   if (!layoutRoot || !mainRoot || !changeRoot) return;
   applyStoredPanel();
-  tipTitle?.addEventListener("click", () => setActivePanel("tip"));
-  changeTitle?.addEventListener("click", () => setActivePanel("change"));
   [mainRoot, changeRoot].forEach((panel) => {
     panel.addEventListener("touchstart", handlePanelSwipeStart, {
       passive: true,
@@ -326,6 +330,19 @@ const setupPanelNavigation = () => {
   } else if (typeof mobilePortraitQuery.addListener === "function") {
     mobilePortraitQuery.addListener(handlePortraitChange);
   }
+  document.addEventListener("click", (event) => {
+    if (!layoutRoot || !mobilePortraitQuery.matches) return;
+    const activePanel = getActivePanel();
+    if (!activePanel) return;
+    const heading =
+      activePanel === "tip"
+        ? mainRoot.querySelector(".tip-header")
+        : changeRoot.querySelector(".panel-header");
+    if (!heading) return;
+    if (heading.contains(event.target)) {
+      toggleActivePanel();
+    }
+  });
 };
 
 document.addEventListener("DOMContentLoaded", () => {
