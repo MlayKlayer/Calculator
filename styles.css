@@ -401,7 +401,7 @@ body {
 
 .tip-header h2 {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .icon-button {
@@ -443,6 +443,12 @@ body {
   border-radius: var(--radius-md);
   padding: 12px 14px;
   gap: var(--space-2);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-row:focus-within {
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 .input-row input {
@@ -590,6 +596,12 @@ body {
   border: 1px dashed var(--custom-tip-border);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-tip:focus-within {
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 .custom-tip input {
@@ -652,7 +664,7 @@ body {
 
 .panel-header h2 {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .panel-subtitle {
