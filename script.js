@@ -107,6 +107,12 @@ const copyToast = document.getElementById("copy-toast");
 const feedbackFooter = document.getElementById("feedbackFooter");
 const feedbackSlotDesktop = document.getElementById("feedbackSlotDesktop");
 const feedbackSlotMobile = document.getElementById("feedbackSlotMobile");
+const layoutRoot = document.querySelector(".layout");
+const tipTitle = document.getElementById("tip-title");
+const changeTitle = document.querySelector(".panel-header h2");
+const mobilePortraitQuery = window.matchMedia(
+  "(max-width: 768px) and (orientation: portrait)"
+);
 
 const resultDisplays = [
   display,
@@ -120,7 +126,16 @@ resultDisplays.forEach((element) => element.classList.add("result-display"));
 const placeFeedback = () => {
   if (!feedbackFooter || !feedbackSlotDesktop || !feedbackSlotMobile) return;
   const isMobile = window.matchMedia("(max-width: 768px)").matches;
-  const targetSlot = isMobile ? feedbackSlotMobile : feedbackSlotDesktop;
+  const activePanel = layoutRoot?.dataset.activePanel;
+  const usePortraitSlot =
+    mobilePortraitQuery.matches && (activePanel === "change" || activePanel === "tip");
+  const targetSlot = usePortraitSlot
+    ? activePanel === "tip"
+      ? feedbackSlotDesktop
+      : feedbackSlotMobile
+    : isMobile
+      ? feedbackSlotMobile
+      : feedbackSlotDesktop;
   if (feedbackFooter.parentElement !== targetSlot) {
     targetSlot.appendChild(feedbackFooter);
   }
@@ -147,6 +162,7 @@ const changeState = {
 const PREFS_KEY = "mincalc.prefs.v1";
 const INSTALL_HINT_KEY = "mincalc.installHintDismissed.v1";
 const THEME_KEY = "themeMode";
+const ACTIVE_PANEL_KEY = "mincalc.activePanel.v1";
 let deferredInstallPrompt = null;
 
 const safeStorage = {
@@ -165,6 +181,27 @@ const safeStorage = {
     }
     return true;
   },
+};
+
+const getStoredActivePanel = () => {
+  const stored = safeStorage.get(ACTIVE_PANEL_KEY);
+  return stored === "tip" || stored === "change" ? stored : "change";
+};
+
+const setActivePanel = (panel, { persist = true } = {}) => {
+  if (!layoutRoot) return;
+  if (panel !== "tip" && panel !== "change") return;
+  layoutRoot.dataset.activePanel = panel;
+  if (persist) {
+    safeStorage.set(ACTIVE_PANEL_KEY, panel);
+  }
+  placeFeedback();
+};
+
+const applyStoredPanel = () => {
+  if (!layoutRoot) return;
+  const panel = getStoredActivePanel();
+  setActivePanel(panel, { persist: false });
 };
 
 const themeModes = ["dark", "light", "auto"];
@@ -224,8 +261,79 @@ if (typeof themeQuery.addEventListener === "function") {
   themeQuery.addListener(handleThemeQueryChange);
 }
 
-document.addEventListener("DOMContentLoaded", placeFeedback);
+const PANEL_SWIPE_THRESHOLD = 36;
+let panelSwipeStart = null;
+
+const shouldHandlePanelGesture = (eventTarget) => {
+  if (!layoutRoot || !mobilePortraitQuery.matches) return false;
+  if (isTextEntryElement(eventTarget)) return false;
+  return true;
+};
+
+const handlePanelSwipeStart = (event) => {
+  if (!shouldHandlePanelGesture(event.target)) return;
+  const activePanel = layoutRoot?.dataset.activePanel;
+  if (!activePanel) return;
+  if (
+    (activePanel === "tip" && event.currentTarget !== mainRoot) ||
+    (activePanel === "change" && event.currentTarget !== changeRoot)
+  ) {
+    return;
+  }
+  const [touch] = event.touches;
+  if (!touch) return;
+  panelSwipeStart = {
+    x: touch.clientX,
+    y: touch.clientY,
+  };
+};
+
+const handlePanelSwipeEnd = (event) => {
+  if (!panelSwipeStart) return;
+  const touch = event.changedTouches?.[0];
+  if (!touch) return;
+  const deltaX = touch.clientX - panelSwipeStart.x;
+  const deltaY = touch.clientY - panelSwipeStart.y;
+  panelSwipeStart = null;
+  if (Math.abs(deltaX) < PANEL_SWIPE_THRESHOLD) return;
+  if (Math.abs(deltaX) <= Math.abs(deltaY)) return;
+  if (deltaX < 0) {
+    setActivePanel("tip");
+  } else {
+    setActivePanel("change");
+  }
+};
+
+const setupPanelNavigation = () => {
+  if (!layoutRoot || !mainRoot || !changeRoot) return;
+  applyStoredPanel();
+  tipTitle?.addEventListener("click", () => setActivePanel("tip"));
+  changeTitle?.addEventListener("click", () => setActivePanel("change"));
+  [mainRoot, changeRoot].forEach((panel) => {
+    panel.addEventListener("touchstart", handlePanelSwipeStart, {
+      passive: true,
+    });
+    panel.addEventListener("touchend", handlePanelSwipeEnd, {
+      passive: true,
+    });
+  });
+  const handlePortraitChange = () => {
+    applyStoredPanel();
+    placeFeedback();
+  };
+  if (typeof mobilePortraitQuery.addEventListener === "function") {
+    mobilePortraitQuery.addEventListener("change", handlePortraitChange);
+  } else if (typeof mobilePortraitQuery.addListener === "function") {
+    mobilePortraitQuery.addListener(handlePortraitChange);
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  applyStoredPanel();
+  placeFeedback();
+});
 window.addEventListener("resize", placeFeedback);
+setupPanelNavigation();
 
 const operators = {
   "+": (a, b) => a + b,
