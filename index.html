@@ -109,125 +109,127 @@
           <div id="feedbackSlotDesktop" class="feedback-slot"></div>
         </div>
 
-        <section id="calcChange" class="change-panel" aria-label="Change calculator">
-          <header class="panel-header">
-            <div>
-              <h2>Change Calculator</h2>
-              <p class="panel-subtitle">Ресто</p>
-            </div>
-            <div class="currency-toggle" role="group" aria-label="Output currency">
-              <button class="toggle-chip active" type="button" data-role="output-currency" data-currency="EUR" aria-pressed="true">
-                EUR
-              </button>
-              <button class="toggle-chip" type="button" data-role="output-currency" data-currency="BGN" aria-pressed="false">
-                BGN
-              </button>
-            </div>
-          </header>
-
-          <div class="panel-body">
-            <label class="input-group">
-              <span class="label">Product price</span>
-              <div class="input-row">
-                <input
-                  id="product-price"
-                  type="text"
-                  inputmode="decimal"
-                  autocomplete="off"
-                  spellcheck="false"
-                  pattern="[0-9]+([.,][0-9]+)?"
-                  aria-label="Product price"
-                />
-                <div class="currency-toggle" role="group" aria-label="Product price currency">
-                  <button class="toggle-chip active" type="button" data-role="price-currency" data-currency="EUR" aria-pressed="true">
-                    EUR
-                  </button>
-                  <button class="toggle-chip" type="button" data-role="price-currency" data-currency="BGN" aria-pressed="false">
-                    BGN
-                  </button>
-                </div>
+        <div class="panel-stack panel-stack-change">
+          <section id="calcChange" class="change-panel" aria-label="Change calculator">
+            <header class="panel-header">
+              <div>
+                <h2>Change Calculator</h2>
+                <p class="panel-subtitle">Ресто</p>
               </div>
-            </label>
-
-            <label class="input-group">
-              <div class="label-row">
-                <span class="label">Paid amount</span>
+              <div class="currency-toggle" role="group" aria-label="Output currency">
+                <button class="toggle-chip active" type="button" data-role="output-currency" data-currency="EUR" aria-pressed="true">
+                  EUR
+                </button>
+                <button class="toggle-chip" type="button" data-role="output-currency" data-currency="BGN" aria-pressed="false">
+                  BGN
+                </button>
               </div>
-              <div class="input-row">
-                <input
-                  id="paid-amount"
-                  type="text"
-                  inputmode="decimal"
-                  autocomplete="off"
-                  spellcheck="false"
-                  pattern="[0-9]+([.,][0-9]+)?"
-                  aria-label="Paid amount"
-                />
-                <div class="currency-toggle" role="group" aria-label="Paid amount currency">
-                  <button class="toggle-chip active" type="button" data-role="paid-currency" data-currency="EUR" aria-pressed="true">
-                    EUR
-                  </button>
-                  <button class="toggle-chip" type="button" data-role="paid-currency" data-currency="BGN" aria-pressed="false">
-                    BGN
-                  </button>
-                </div>
-              </div>
-            </label>
+            </header>
 
-            <div class="split-toggle">
-              <button class="toggle-btn" id="split-toggle" type="button" aria-pressed="false">
-                Split payment
-              </button>
-              <span class="helper-text">Add a second currency payment</span>
-            </div>
-
-            <div class="split-fields" id="split-fields">
+            <div class="panel-body">
               <label class="input-group">
-                <span class="label">Paid amount (second)</span>
+                <span class="label">Product price</span>
                 <div class="input-row">
                   <input
-                    id="paid-amount-secondary"
+                    id="product-price"
                     type="text"
                     inputmode="decimal"
                     autocomplete="off"
                     spellcheck="false"
                     pattern="[0-9]+([.,][0-9]+)?"
-                    aria-label="Second paid amount"
+                    aria-label="Product price"
                   />
-                  <div class="currency-toggle" role="group" aria-label="Second paid amount currency">
-                    <button class="toggle-chip active" type="button" data-role="paid-secondary-currency" data-currency="BGN" aria-pressed="true">
+                  <div class="currency-toggle" role="group" aria-label="Product price currency">
+                    <button class="toggle-chip active" type="button" data-role="price-currency" data-currency="EUR" aria-pressed="true">
+                      EUR
+                    </button>
+                    <button class="toggle-chip" type="button" data-role="price-currency" data-currency="BGN" aria-pressed="false">
                       BGN
                     </button>
                   </div>
                 </div>
               </label>
-            </div>
 
-            <div class="change-output" aria-live="polite">
-              <div class="change-main">
-                <span id="change-label" class="result-label">Change</span>
-                <span id="change-value" class="change-value copy-target">0.00</span>
+              <label class="input-group">
+                <div class="label-row">
+                  <span class="label">Paid amount</span>
+                </div>
+                <div class="input-row">
+                  <input
+                    id="paid-amount"
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    spellcheck="false"
+                    pattern="[0-9]+([.,][0-9]+)?"
+                    aria-label="Paid amount"
+                  />
+                  <div class="currency-toggle" role="group" aria-label="Paid amount currency">
+                    <button class="toggle-chip active" type="button" data-role="paid-currency" data-currency="EUR" aria-pressed="true">
+                      EUR
+                    </button>
+                    <button class="toggle-chip" type="button" data-role="paid-currency" data-currency="BGN" aria-pressed="false">
+                      BGN
+                    </button>
+                  </div>
+                </div>
+              </label>
+
+              <div class="split-toggle">
+                <button class="toggle-btn" id="split-toggle" type="button" aria-pressed="false">
+                  Split payment
+                </button>
+                <span class="helper-text">Add a second currency payment</span>
               </div>
-              <div id="change-hint" class="change-hint">
-                Add more payment to reach total
+
+              <div class="split-fields" id="split-fields">
+                <label class="input-group">
+                  <span class="label">Paid amount (second)</span>
+                  <div class="input-row">
+                    <input
+                      id="paid-amount-secondary"
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      spellcheck="false"
+                      pattern="[0-9]+([.,][0-9]+)?"
+                      aria-label="Second paid amount"
+                    />
+                    <div class="currency-toggle" role="group" aria-label="Second paid amount currency">
+                      <button class="toggle-chip active" type="button" data-role="paid-secondary-currency" data-currency="BGN" aria-pressed="true">
+                        BGN
+                      </button>
+                    </div>
+                  </div>
+                </label>
               </div>
-              <div class="change-breakdown">
-                <span>Paid</span>
-                <span id="paid-total">0.00</span>
+
+              <div class="change-output" aria-live="polite">
+                <div class="change-main">
+                  <span id="change-label" class="result-label">Change</span>
+                  <span id="change-value" class="change-value copy-target">0.00</span>
+                </div>
+                <div id="change-hint" class="change-hint">
+                  Add more payment to reach total
+                </div>
+                <div class="change-breakdown">
+                  <span>Paid</span>
+                  <span id="paid-total">0.00</span>
+                </div>
+                <div class="change-breakdown">
+                  <span>Price</span>
+                  <span id="price-total">0.00</span>
+                </div>
               </div>
-              <div class="change-breakdown">
-                <span>Price</span>
-                <span id="price-total">0.00</span>
+              <div class="change-actions">
+                <button class="change-reset" id="change-reset" type="button">
+                  Reset all
+                </button>
               </div>
             </div>
-            <div class="change-actions">
-              <button class="change-reset" id="change-reset" type="button">
-                Reset all
-              </button>
-            </div>
-          </div>
-        </section>
-        <div id="feedbackSlotMobile" class="feedback-slot"></div>
+          </section>
+          <div id="feedbackSlotMobile" class="feedback-slot"></div>
+        </div>
       </div>
     </main>
     <footer id="feedbackFooter" class="feedback-footer">

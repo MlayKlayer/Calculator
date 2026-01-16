@@ -36,6 +36,7 @@
   --radius-md: 16px;
   --radius-sm: 12px;
   --shadow: 0 20px 45px rgba(4, 9, 18, 0.55);
+  --panel-bg: var(--surface-elevated);
   --space-1: 6px;
   --space-2: 10px;
   --space-3: 16px;
@@ -105,6 +106,9 @@ body {
 }
 
 .feedback-footer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
   text-align: center;
   font-size: 0.8rem;
   color: var(--text-secondary);
@@ -126,6 +130,7 @@ body {
 .calculator-stack {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .feedback-slot {
@@ -376,7 +381,7 @@ body {
 
 .tip-modal {
   width: min(420px, 94vw);
-  background: var(--surface-elevated);
+  background: var(--panel-bg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
@@ -388,6 +393,7 @@ body {
 }
 
 .tip-panel {
+  width: 100%;
   transform: none;
   max-height: none;
 }
@@ -650,7 +656,7 @@ body {
 .change-panel {
   flex: 1;
   min-width: 280px;
-  background: var(--surface);
+  background: var(--panel-bg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   padding: var(--space-4);
@@ -658,6 +664,12 @@ body {
   flex-direction: column;
   gap: var(--space-4);
   border: 1px solid var(--border);
+}
+
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .panel-header {
@@ -971,7 +983,7 @@ body {
     flex-direction: column;
   }
 
-  #calcChange {
+  .panel-stack-change {
     order: 0;
   }
 
@@ -1016,5 +1028,33 @@ body {
     width: calc(100% - 24px);
     justify-content: space-between;
     border-radius: var(--radius-md);
+  }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .layout {
+    position: relative;
+  }
+
+  .calculator-stack,
+  .panel-stack-change {
+    width: 100%;
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+  }
+
+  .layout[data-active-panel="change"] .calculator-stack {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(12px);
+    position: absolute;
+    inset: 0;
+  }
+
+  .layout[data-active-panel="tip"] .panel-stack-change {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-12px);
+    position: absolute;
+    inset: 0;
   }
 }
