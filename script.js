@@ -74,6 +74,15 @@ const feedbackFooter = document.getElementById("feedbackFooter");
 const feedbackSlotDesktop = document.getElementById("feedbackSlotDesktop");
 const feedbackSlotMobile = document.getElementById("feedbackSlotMobile");
 
+const resultDisplays = [
+  display,
+  changeValue,
+  perPersonOutput,
+  tipTotalOutput,
+  totalAmountOutput,
+].filter(Boolean);
+resultDisplays.forEach((element) => element.classList.add("result-display"));
+
 const placeFeedback = () => {
   if (!feedbackFooter || !feedbackSlotDesktop || !feedbackSlotMobile) return;
   const isMobile = window.matchMedia("(max-width: 768px)").matches;
@@ -195,6 +204,111 @@ const formatNumber = (value) => {
   if (hasError) return "Error";
   if (value.length > 12) return parseFloat(value).toPrecision(8);
   return value;
+};
+
+const resultRenderState = new Map();
+
+const parseDisplayNumber = (text) => {
+  if (!text) return null;
+  const numericText = text.replace(/[^0-9.,+-]/g, "");
+  if (!numericText) return null;
+  const normalized = numericText.includes(",") && !numericText.includes(".")
+    ? numericText.replace(",", ".")
+    : numericText;
+  const value = parseFloat(normalized);
+  return Number.isNaN(value) ? null : value;
+};
+
+const isZeroDisplayValue = (text) => {
+  const value = parseDisplayNumber(text);
+  return value !== null && Math.abs(value) === 0;
+};
+
+const shouldConfirmDisplayValue = (text) => {
+  const value = parseDisplayNumber(text);
+  return value !== null && Math.abs(value) > 0;
+};
+
+const buildResultContent = (text) => {
+  if (!text) return document.createTextNode("");
+  if (/e/i.test(text)) return document.createTextNode(text);
+  const match = text.match(/^(\D*)([+-]?)(\d+)([.,]\d+)?$/);
+  if (!match) return document.createTextNode(text);
+  const [, currency, sign, integer, decimal] = match;
+  const fragment = document.createDocumentFragment();
+  if (currency) {
+    const currencySpan = document.createElement("span");
+    currencySpan.className = "result-currency";
+    currencySpan.textContent = currency;
+    fragment.appendChild(currencySpan);
+  }
+  const integerSpan = document.createElement("span");
+  integerSpan.className = "result-int";
+  integerSpan.textContent = `${sign}${integer}`;
+  fragment.appendChild(integerSpan);
+  if (decimal) {
+    const decimalSpan = document.createElement("span");
+    decimalSpan.className = "result-decimal";
+    decimalSpan.textContent = decimal;
+    fragment.appendChild(decimalSpan);
+  }
+  return fragment;
+};
+
+const setResultContent = (element, text) => {
+  const wrapper = document.createElement("span");
+  wrapper.className = "result-content";
+  wrapper.appendChild(buildResultContent(text));
+  element.replaceChildren(wrapper);
+};
+
+const updateResultDisplay = (element, nextText) => {
+  if (!element) return;
+  const state = resultRenderState.get(element) ?? {};
+  if (state.timeoutId) window.clearTimeout(state.timeoutId);
+  if (state.breatheTimeout) window.clearTimeout(state.breatheTimeout);
+  if (state.confirmTimeout) window.clearTimeout(state.confirmTimeout);
+
+  const previousText =
+    element.dataset.currentValue ?? element.textContent?.trim() ?? "";
+
+  element.classList.remove("result-breathe");
+  void element.offsetWidth;
+  element.classList.add("result-breathe");
+  state.breatheTimeout = window.setTimeout(() => {
+    element.classList.remove("result-breathe");
+  }, 140);
+
+  state.timeoutId = window.setTimeout(() => {
+    if (previousText && previousText !== nextText) {
+      if (state.ghostTimeout) window.clearTimeout(state.ghostTimeout);
+      element.dataset.ghost = previousText;
+      element.classList.add("has-ghost");
+      state.ghostTimeout = window.setTimeout(() => {
+        if (element.dataset.ghost === previousText) {
+          element.classList.remove("has-ghost");
+          delete element.dataset.ghost;
+        }
+      }, 2100);
+    }
+
+    setResultContent(element, nextText);
+    element.dataset.currentValue = nextText;
+
+    const isZero = isZeroDisplayValue(nextText);
+    element.classList.toggle("result-zero", isZero);
+
+    if (!isZero && shouldConfirmDisplayValue(nextText)) {
+      element.classList.remove("result-confirm");
+      void element.offsetWidth;
+      element.classList.add("result-confirm");
+      state.confirmTimeout = window.setTimeout(() => {
+        element.classList.remove("result-confirm");
+      }, 140);
+    }
+  }, 50);
+
+  resultRenderState.set(element, state);
 };
 
 const parseMoney = (raw) => {
@@ -358,7 +472,7 @@ const sanitizeNumericInput = (input) => {
 };
 
 const updateDisplay = () => {
-  display.textContent = formatNumber(displayValue);
+  updateResultDisplay(display, formatNumber(displayValue));
   tipButton.disabled = hasError;
 };
 
@@ -540,9 +654,9 @@ const updateTipOutputs = () => {
   const displayTotal = roundPerPerson ? roundedPerPerson * people : total;
   const displayTip = roundPerPerson ? displayTotal - base : tipAmount;
 
-  perPersonOutput.textContent = `$${roundedPerPerson.toFixed(2)}`;
-  tipTotalOutput.textContent = `$${displayTip.toFixed(2)}`;
-  totalAmountOutput.textContent = `$${displayTotal.toFixed(2)}`;
+  updateResultDisplay(perPersonOutput, `$${roundedPerPerson.toFixed(2)}`);
+  updateResultDisplay(tipTotalOutput, `$${displayTip.toFixed(2)}`);
+  updateResultDisplay(totalAmountOutput, `$${displayTotal.toFixed(2)}`);
   setValueNeutral(perPersonOutput, roundedPerPerson === 0);
   animateValue(perPersonOutput);
 };
@@ -629,7 +743,7 @@ const updateChangeOutputs = () => {
   );
 
   changeLabel.textContent = isChange ? "Change" : "Remaining";
-  changeValue.textContent = formatMoney(displayAmountConverted);
+  updateResultDisplay(changeValue, formatMoney(displayAmountConverted));
   paidTotalOutput.textContent = formatMoney(paidConverted);
   priceTotalOutput.textContent = formatMoney(priceConverted);
   changeHint.classList.toggle("is-visible", !isChange);
