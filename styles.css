@@ -387,6 +387,11 @@ body {
   flex-direction: column;
 }
 
+.tip-panel {
+  transform: none;
+  max-height: none;
+}
+
 .modal-overlay.open .tip-modal {
   transform: translateY(0) scale(1);
 }
@@ -998,6 +1003,13 @@ body {
 
   .modal-overlay.open .tip-modal {
     transform: translateY(0);
+  }
+
+  .tip-panel {
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+    max-height: none;
+    transform: none;
   }
 
   .install-hint {
