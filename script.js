@@ -2,6 +2,7 @@ const mainRoot = document.getElementById("calcMain");
 const changeRoot = document.getElementById("calcChange");
 
 let activeKeyboardTarget = "main";
+let hasMainCalculator = false;
 
 const isTextEntryElement = (element) =>
   !!element &&
@@ -12,6 +13,7 @@ const isTextEntryElement = (element) =>
 const isTextEntry = (element) => isTextEntryElement(element);
 
 const shouldMainConsumeTypingEvent = (event) => {
+  if (!hasMainCalculator) return false;
   const target = event?.target;
   if (isTextEntryElement(target)) return false;
   const activeElement = document.activeElement;
@@ -21,6 +23,7 @@ const shouldMainConsumeTypingEvent = (event) => {
 
 if (mainRoot) {
   const setMain = () => {
+    if (!hasMainCalculator) return;
     activeKeyboardTarget = "main";
   };
   mainRoot.addEventListener("pointerdown", setMain);
@@ -66,6 +69,11 @@ document.addEventListener("focusin", (event) => {
 const display = mainRoot.querySelector("#calc-display");
 const buttons = mainRoot.querySelectorAll(".button-grid .btn");
 const tipButton = mainRoot.querySelector(".btn-tip");
+
+hasMainCalculator = Boolean(display && buttons.length);
+if (!hasMainCalculator) {
+  activeKeyboardTarget = "change";
+}
 
 const tipOverlay = mainRoot.querySelector("#tip-overlay");
 const tipClose = mainRoot.querySelector("#tip-close");
@@ -498,8 +506,12 @@ const sanitizeNumericInput = (input) => {
 };
 
 const updateDisplay = () => {
-  updateResultDisplay(display, formatNumber(displayValue));
-  tipButton.disabled = hasError;
+  if (display) {
+    updateResultDisplay(display, formatNumber(displayValue));
+  }
+  if (tipButton) {
+    tipButton.disabled = hasError;
+  }
 };
 
 const clampNumber = (value, min, max, fallback) => {
@@ -629,31 +641,35 @@ const triggerError = () => {
   updateDisplay();
 };
 
-buttons.forEach((button) => {
-  button.addEventListener("click", () => {
-    activeKeyboardTarget = "main";
-    if (button.dataset.number !== undefined) {
-      handleNumber(button.dataset.number);
-      return;
-    }
+if (hasMainCalculator) {
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      activeKeyboardTarget = "main";
+      if (button.dataset.number !== undefined) {
+        handleNumber(button.dataset.number);
+        return;
+      }
 
-    if (button.dataset.operator) {
-      handleOperator(button.dataset.operator);
-      return;
-    }
+      if (button.dataset.operator) {
+        handleOperator(button.dataset.operator);
+        return;
+      }
 
-    const action = button.dataset.action;
-    if (action === "ac") clearAll();
-    if (action === "clear") clearEntry();
-    if (action === "backspace") handleBackspace();
-    if (action === "equals") handleEquals();
-    if (action === "tip" && !hasError) openTipModal();
+      const action = button.dataset.action;
+      if (action === "ac") clearAll();
+      if (action === "clear") clearEntry();
+      if (action === "backspace") handleBackspace();
+      if (action === "equals") handleEquals();
+      if (action === "tip" && !hasError) openTipModal();
+    });
   });
-});
+}
 
-tipButton.addEventListener("click", () => {
-  if (!hasError) openTipModal();
-});
+if (tipButton) {
+  tipButton.addEventListener("click", () => {
+    if (!hasError) openTipModal();
+  });
+}
 
 const parseBaseAmount = () => {
   return Math.max(0, parseMoney(baseAmountInput.value));
@@ -776,6 +792,7 @@ const updateChangeOutputs = () => {
 };
 
 const openTipModal = () => {
+  if (!tipOverlay) return;
   const currentValue = hasError ? 0 : parseFloat(displayValue) || 0;
   baseAmountInput.value = currentValue.toFixed(2);
   if (tipCustomPercentEnabled) {
@@ -792,6 +809,7 @@ const openTipModal = () => {
 };
 
 const closeTipModal = () => {
+  if (!tipOverlay) return;
   tipOverlay.classList.remove("open");
   tipOverlay.setAttribute("aria-hidden", "true");
 };
@@ -832,11 +850,15 @@ roundToggle.addEventListener("change", () => {
   writePrefs();
 });
 
-tipOverlay.addEventListener("click", (event) => {
-  if (event.target === tipOverlay) closeTipModal();
-});
+if (tipOverlay) {
+  tipOverlay.addEventListener("click", (event) => {
+    if (event.target === tipOverlay) closeTipModal();
+  });
+}
 
-tipClose.addEventListener("click", closeTipModal);
+if (tipClose) {
+  tipClose.addEventListener("click", closeTipModal);
+}
 
 priceInput.addEventListener("input", () => {
   sanitizeMoneyInput(priceInput);
@@ -916,7 +938,7 @@ if (themeToggle) {
 
 window.addEventListener("keydown", (event) => {
   if (!shouldMainConsumeTypingEvent(event)) return;
-  if (tipOverlay.classList.contains("open")) {
+  if (tipOverlay?.classList.contains("open")) {
     if (event.key === "Escape") closeTipModal();
     return;
   }
