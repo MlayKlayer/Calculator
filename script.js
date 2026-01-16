@@ -9,6 +9,8 @@ const isTextEntryElement = (element) =>
     element.tagName === "TEXTAREA" ||
     element.isContentEditable === true);
 
+const isTextEntry = (element) => isTextEntryElement(element);
+
 const shouldMainConsumeTypingEvent = (event) => {
   const target = event?.target;
   if (isTextEntryElement(target)) return false;
@@ -44,6 +46,22 @@ if (changeRoot) {
     target.select();
   });
 }
+
+document.addEventListener("focusin", (event) => {
+  const element = event.target;
+  if (!isTextEntry(element)) return;
+  const tipRoot =
+    element.closest('[data-tip-modal="true"]') ||
+    element.closest(".tip-modal") ||
+    element.closest("#tipModal");
+  if (!tipRoot) return;
+  if (String(element.value || "").trim() === "") return;
+  setTimeout(() => {
+    try {
+      element.select();
+    } catch (_) {}
+  }, 0);
+});
 
 const display = mainRoot.querySelector("#calc-display");
 const buttons = mainRoot.querySelectorAll(".button-grid .btn");
