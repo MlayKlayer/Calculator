@@ -830,7 +830,8 @@ body {
   justify-content: space-between;
   color: var(--text-secondary);
   font-size: 0.95rem;
-  opacity: 0.78;
+  font-weight: 400;
+  opacity: 1;
 }
 
 .change-actions {
