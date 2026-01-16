@@ -30,11 +30,18 @@ if (changeRoot) {
   const setChange = () => {
     activeKeyboardTarget = "change";
   };
+  const isChangeNumericInput = (element) =>
+    element instanceof HTMLInputElement &&
+    element.matches('input[inputmode="decimal"]');
   changeRoot.addEventListener("pointerdown", setChange);
   changeRoot.addEventListener("mousedown", setChange);
   changeRoot.addEventListener("touchstart", setChange, { passive: true });
   changeRoot.addEventListener("focusin", (event) => {
     if (isTextEntryElement(event.target)) activeKeyboardTarget = "change";
+    const target = event.target;
+    if (!isChangeNumericInput(target)) return;
+    if (!target.value.trim()) return;
+    target.select();
   });
 }
 
@@ -65,6 +72,7 @@ const changeValue = changeRoot.querySelector("#change-value");
 const paidTotalOutput = changeRoot.querySelector("#paid-total");
 const priceTotalOutput = changeRoot.querySelector("#price-total");
 const changeHint = changeRoot.querySelector("#change-hint");
+const changeResetButton = changeRoot.querySelector("#change-reset");
 const installHint = document.getElementById("install-hint");
 const installHintDismiss = document.getElementById("install-hint-dismiss");
 const themeToggle = document.getElementById("theme-toggle");
@@ -826,6 +834,16 @@ paidSecondaryInput.addEventListener("input", () => {
   sanitizeMoneyInput(paidSecondaryInput);
   updateChangeOutputs();
 });
+
+if (changeResetButton) {
+  changeResetButton.addEventListener("click", () => {
+    priceInput.value = "";
+    paidInput.value = "";
+    paidSecondaryInput.value = "";
+    updateChangeOutputs();
+    priceInput.focus();
+  });
+}
 
 changeRoot.querySelectorAll('[data-role="price-currency"]').forEach((button) => {
   button.addEventListener("click", () => {
