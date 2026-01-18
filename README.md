@@ -62,7 +62,7 @@ This project explores how far a minimalist UI can go while still solving **every
 ![Minimal Calculator Desktop](screenshots/desktop.png)
 
 ### Mobile
-![Minimal Calculator Mobile](screenshots/mobile.png)
+![Minimal Calculator Mobile](screenshots/mobile1.png)(screenshots/mobile2.png) 
 
 ---
 
