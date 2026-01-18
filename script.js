@@ -334,6 +334,7 @@ const setupPanelNavigation = () => {
     if (!layoutRoot || !mobilePortraitQuery.matches) return;
     const activePanel = getActivePanel();
     if (!activePanel) return;
+    if (event.target.closest(".currency-toggle")) return;
     const heading =
       activePanel === "tip"
         ? mainRoot.querySelector(".tip-header")
