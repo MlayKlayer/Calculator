@@ -58,11 +58,14 @@ This project explores how far a minimalist UI can go while still solving **every
 
 ## Screenshots
 
-### Desktop
-![Minimal Calculator Desktop](screenshots/desktop.png)
+<div align="center">
+  <h3>Desktop</h3>
+  <img src="screenshots/desktop.png" width="900"/>
 
-### Mobile
-![Minimal Calculator Mobile](screenshots/mobile1.png)(screenshots/mobile2.png) 
+  <h3>Mobile</h3>
+  <img src="screenshots/mobile1.png" width="350"/>
+  <img src="screenshots/mobile2.png" width="350"/>
+</div>
 
 ---
 
