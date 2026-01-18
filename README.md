@@ -56,6 +56,16 @@ This project explores how far a minimalist UI can go while still solving **every
 
 ---
 
+## Screenshots
+
+### Desktop
+![Minimal Calculator Desktop](screenshots/desktop.png)
+
+### Mobile
+![Minimal Calculator Mobile](screenshots/mobile.png)
+
+---
+
 ## Tech
 
 - Vanilla HTML / CSS / JavaScript
